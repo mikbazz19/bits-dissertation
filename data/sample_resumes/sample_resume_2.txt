@@ -1,0 +1,60 @@
+Michael Chen
+michael.chen@techmail.com | (555) 234-5678
+Portfolio: michaelchen.dev
+
+SUMMARY
+Data Scientist with 4 years of experience in machine learning, statistical analysis, and data visualization. 
+Skilled in Python, R, and SQL with expertise in developing predictive models and deriving actionable insights 
+from complex datasets.
+
+WORK EXPERIENCE
+
+Data Scientist
+Analytics Pro Solutions, Boston, MA
+January 2022 - Present (2 years)
+- Developed machine learning models improving customer churn prediction by 35%
+- Created interactive dashboards using Tableau and Power BI for executive reporting
+- Conducted A/B testing and statistical analysis to optimize marketing campaigns
+- Collaborated with engineering teams to deploy models in production
+Skills: Python, TensorFlow, Scikit-learn, Pandas, SQL, Tableau, AWS
+
+Data Analyst
+Data Insights LLC, New York, NY
+July 2020 - December 2021 (1.5 years)
+- Performed exploratory data analysis on large datasets (10M+ records)
+- Built automated reporting systems using Python and SQL
+- Presented findings to stakeholders and recommended data-driven strategies
+Skills: Python, SQL, Excel, Power BI, Statistics
+
+Junior Data Analyst
+StartData Corp, Remote
+June 2019 - June 2020 (1 year)
+- Cleaned and preprocessed data for analysis
+- Created visualizations and reports for business teams
+- Assisted senior analysts with statistical modeling
+Skills: SQL, Excel, Python, Data Visualization
+
+EDUCATION
+
+Master of Science in Data Science
+Boston University
+Graduated: 2019
+
+Bachelor of Science in Statistics
+University of Michigan
+Graduated: 2017
+
+TECHNICAL SKILLS
+
+Programming: Python, R, SQL
+Machine Learning: Scikit-learn, TensorFlow, PyTorch, XGBoost
+Data Analysis: Pandas, NumPy, SciPy, Statistics
+Visualization: Tableau, Power BI, Matplotlib, Seaborn
+Databases: MySQL, PostgreSQL, MongoDB
+Big Data: Hadoop, Spark
+Cloud: AWS (S3, EC2, SageMaker)
+Tools: Jupyter, Git, Docker
+
+CERTIFICATIONS
+- Google Data Analytics Professional Certificate
+- TensorFlow Developer Certificate

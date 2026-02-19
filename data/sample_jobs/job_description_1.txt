@@ -1,0 +1,57 @@
+Senior Full Stack Engineer
+TechCorp Solutions | San Francisco, CA
+
+ABOUT THE ROLE
+We are seeking an experienced Senior Full Stack Engineer to join our growing engineering team. You will be 
+responsible for designing, developing, and maintaining scalable web applications that serve millions of users.
+
+RESPONSIBILITIES
+- Design and implement new features for our web platform
+- Build and maintain RESTful APIs and microservices
+- Collaborate with product managers and designers to deliver high-quality solutions
+- Write clean, maintainable, and well-tested code
+- Mentor junior engineers and participate in code reviews
+- Optimize application performance and scalability
+- Participate in architectural decisions and technical planning
+
+REQUIRED QUALIFICATIONS
+- 5+ years of professional software engineering experience
+- Strong proficiency in Python and JavaScript/TypeScript
+- Experience with modern web frameworks (React, Angular, or Vue.js)
+- Solid understanding of database design (SQL and NoSQL)
+- Experience with cloud platforms (AWS, Azure, or GCP)
+- Proficiency with Docker and containerization
+- Strong knowledge of RESTful API design and implementation
+- Experience with Git and version control
+- Excellent problem-solving and communication skills
+
+REQUIRED TECHNICAL SKILLS
+- Backend: Python (Django or Flask), Node.js
+- Frontend: React, TypeScript, HTML5, CSS3
+- Databases: PostgreSQL, MongoDB, Redis
+- Cloud: AWS (EC2, S3, Lambda, RDS)
+- DevOps: Docker, Kubernetes, CI/CD pipelines
+- Testing: Unit testing, Integration testing
+- Tools: Git, JIRA, Agile/Scrum
+
+PREFERRED QUALIFICATIONS
+- Experience with microservices architecture
+- Knowledge of GraphQL
+- Familiarity with Elasticsearch or similar search technologies
+- Experience with monitoring and logging tools (DataDog, Splunk)
+- Contributions to open-source projects
+- AWS or Azure certifications
+- Experience with system design and high-scale applications
+
+EDUCATION
+- Bachelor's degree in Computer Science, Engineering, or related field (or equivalent experience)
+
+BENEFITS
+- Competitive salary and equity package
+- Health, dental, and vision insurance
+- 401(k) with company match
+- Flexible work arrangements
+- Professional development budget
+- Generous PTO and parental leave
+
+TechCorp Solutions is an equal opportunity employer committed to diversity and inclusion.

@@ -1,0 +1,68 @@
+Machine Learning Engineer
+AI Innovations Lab | Remote (US)
+
+ABOUT US
+AI Innovations Lab is a cutting-edge startup developing next-generation AI solutions for enterprise clients. 
+We're looking for talented ML Engineers to join our team and help shape the future of artificial intelligence.
+
+JOB DESCRIPTION
+As a Machine Learning Engineer, you will design, develop, and deploy machine learning models and systems that 
+solve complex business problems. You'll work closely with data scientists, software engineers, and product teams 
+to bring AI solutions from research to production.
+
+KEY RESPONSIBILITIES
+- Design and implement machine learning models for various applications
+- Build scalable ML pipelines and infrastructure
+- Optimize model performance and accuracy
+- Deploy models to production environments
+- Conduct experiments and A/B testing
+- Stay current with latest ML research and techniques
+- Collaborate with cross-functional teams
+
+REQUIRED SKILLS & EXPERIENCE
+- 3+ years of experience in machine learning or data science
+- Strong programming skills in Python
+- Experience with ML frameworks: TensorFlow, PyTorch, or Scikit-learn
+- Solid understanding of machine learning algorithms and deep learning
+- Experience with data preprocessing and feature engineering
+- Knowledge of MLOps and model deployment
+- Proficiency with SQL and data manipulation
+- Experience with cloud platforms (AWS, GCP, or Azure)
+- Strong mathematical and statistical skills
+
+TECHNICAL REQUIREMENTS
+- Programming: Python (required), R (nice to have)
+- ML/DL: TensorFlow, PyTorch, Scikit-learn, Keras
+- Data: Pandas, NumPy, SQL
+- MLOps: Docker, Kubernetes, MLflow, Kubeflow
+- Cloud: AWS or GCP (SageMaker, Vertex AI)
+- Version Control: Git
+- NLP: spaCy, NLTK, Hugging Face (plus)
+- Computer Vision: OpenCV (plus)
+
+PREFERRED QUALIFICATIONS
+- Master's or PhD in Computer Science, Machine Learning, or related field
+- Published research papers or conference presentations
+- Experience with NLP, Computer Vision, or Recommendation Systems
+- Knowledge of big data technologies (Spark, Hadoop)
+- Experience with distributed training
+- Contributions to ML open-source projects
+- AWS/GCP ML certifications
+
+EDUCATION
+- Bachelor's degree in Computer Science, Engineering, Mathematics, or related field required
+- Advanced degree (Master's or PhD) strongly preferred
+
+MINIMUM EXPERIENCE
+- 3 years of hands-on machine learning experience
+- 2 years of Python programming
+- 1 year of model deployment in production
+
+WHAT WE OFFER
+- Competitive salary ($120K - $180K based on experience)
+- Equity options
+- Remote work flexibility
+- Top-tier health benefits
+- Learning and development budget ($2K/year)
+- Latest hardware and tools
+- Work with cutting-edge AI technology

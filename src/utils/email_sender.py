@@ -3,7 +3,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Union
 import os
 import socket
 
@@ -29,21 +29,23 @@ class EmailSender:
         self.use_ssl = use_ssl
         self.timeout = timeout
         
-    def send_gap_analysis_report(self, 
-                                  to_email: str,
+    def send_gap_analysis_report(self,
+                                  to_email: Union[str, List[str]],
                                   candidate_name: str,
                                   report_content: str,
                                   sender_email: Optional[str] = None,
-                                  sender_password: Optional[str] = None) -> Dict:
+                                  sender_password: Optional[str] = None,
+                                  cc_email: Optional[Union[str, List[str]]] = None) -> Dict:
         """
         Send gap analysis report via email
         
         Args:
-            to_email: Recipient email address
+            to_email: Recipient email address(es) — a single address or a list of addresses
             candidate_name: Name of the candidate
             report_content: Text content of the gap analysis report
             sender_email: Sender's email (default from env var)
             sender_password: Sender's password or app password (default from env var)
+            cc_email: Optional CC recipient email address(es)
             
         Returns:
             Dict with success status and message
@@ -60,17 +62,39 @@ class EmailSender:
                 'message': 'Email credentials not configured. Please set SENDER_EMAIL and SENDER_PASSWORD environment variables.'
             }
         
-        # Validate recipient email
-        if not to_email or '@' not in to_email:
+        # Normalise to_email to a list
+        if isinstance(to_email, str):
+            to_list = [addr.strip() for addr in to_email.split(',') if addr.strip()]
+        else:
+            to_list = [addr.strip() for addr in to_email if addr.strip()]
+
+        # Normalise cc_email to a list
+        if cc_email is None:
+            cc_list = []
+        elif isinstance(cc_email, str):
+            cc_list = [addr.strip() for addr in cc_email.split(',') if addr.strip()]
+        else:
+            cc_list = [addr.strip() for addr in cc_email if addr.strip()]
+
+        # Validate all recipient addresses
+        invalid = [addr for addr in to_list + cc_list if '@' not in addr]
+        if not to_list:
             return {
                 'success': False,
-                'message': 'Invalid recipient email address'
+                'message': 'At least one valid recipient email address is required'
             }
-        
+        if invalid:
+            return {
+                'success': False,
+                'message': f'Invalid email address(es): {", ".join(invalid)}'
+            }
+
         # Create message
         message = MIMEMultipart()
         message['From'] = sender_email
-        message['To'] = to_email
+        message['To'] = ', '.join(to_list)
+        if cc_list:
+            message['Cc'] = ', '.join(cc_list)
         message['Subject'] = f"Career Development: Gap Analysis Report for {candidate_name or 'You'}"
         
         # Email body
@@ -111,12 +135,15 @@ This is an automated message. Please do not reply to this email.
                 server.starttls()  # Enable security
             
             server.login(sender_email, sender_password)
-            server.send_message(message)
+            all_recipients = to_list + cc_list
+            server.send_message(message, to_addrs=all_recipients)
             server.quit()
-            
+
+            to_display = ', '.join(to_list)
+            cc_display = f' (CC: {", ".join(cc_list)})' if cc_list else ''
             return {
                 'success': True,
-                'message': f'Gap analysis report successfully sent to {to_email}'
+                'message': f'Gap analysis report successfully sent to {to_display}{cc_display}'
             }
             
         except socket.timeout:

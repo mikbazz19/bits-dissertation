@@ -40,6 +40,10 @@ setup(
         "nltk>=3.8",
         "scikit-learn>=1.3.0",
         "python-dateutil>=2.8.0",
+        "pytesseract>=0.3.10",
+        "Pillow>=10.0.0",
+        "pdf2image>=1.16.3",
+        "opencv-python>=4.8.0",
     ],
     extras_require={
         "dev": [
@@ -51,6 +55,12 @@ setup(
         "viz": [
             "matplotlib>=3.8.0",
             "seaborn>=0.13.0",
+        ],
+        "ocr": [
+            "pytesseract>=0.3.10",
+            "Pillow>=10.0.0",
+            "pdf2image>=1.16.3",
+            "opencv-python>=4.8.0",
         ],
     },
     entry_points={

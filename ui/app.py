@@ -56,13 +56,29 @@ def parse_resume(file_or_text, is_file=True):
         parser = ResumeParser()
         
         # Parse resume text
+        IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.webp'}
+
         if is_file:
             # Save uploaded file temporarily
             temp_path = Path("temp") / file_or_text.name
             temp_path.parent.mkdir(exist_ok=True)
             with open(temp_path, "wb") as f:
                 f.write(file_or_text.getbuffer())
-            resume_text = parser.parse_file(temp_path)
+
+            if temp_path.suffix.lower() in IMAGE_EXTS:
+                # Image/scanned resume — route through OCR
+                from src.extraction.ocr_processor import OCRProcessor, TESSERACT_AVAILABLE
+                if not TESSERACT_AVAILABLE:
+                    temp_path.unlink()
+                    return None, (
+                        "OCR dependencies not installed. "
+                        "Run: pip install pytesseract Pillow opencv-python"
+                    )
+                ocr = OCRProcessor()
+                resume_text = ocr.extract_text(temp_path)
+            else:
+                resume_text = parser.parse_file(temp_path)
+
             temp_path.unlink()  # Delete temp file
         else:
             resume_text = file_or_text
@@ -193,9 +209,14 @@ def main():
             resume = None
             if upload_type == "Upload File":
                 uploaded_file = st.file_uploader(
-                    "Upload Resume (PDF, DOCX, TXT)", 
-                    type=['pdf', 'docx', 'txt']
+                    "Upload Resume (PDF, DOCX, TXT, or Image)",
+                    type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp']
                 )
+
+                if uploaded_file:
+                    _ext = Path(uploaded_file.name).suffix.lower()
+                    if _ext in {'.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.webp'}:
+                        st.info("🖼️ Image file detected — OCR will extract text automatically.")
                 
                 if uploaded_file and st.button("Parse Resume"):
                     with st.spinner("Parsing resume..."):
@@ -268,21 +289,33 @@ def main():
             job = None
             if job_input_type == "Upload File":
                 uploaded_job_file = st.file_uploader(
-                    "Upload Job Description (PDF, DOCX, TXT)", 
-                    type=['pdf', 'docx', 'txt'],
+                    "Upload Job Description (PDF, DOCX, TXT, or Image)",
+                    type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp'],
                     key="job_file"
                 )
-                
+
+                if uploaded_job_file:
+                    _ext = Path(uploaded_job_file.name).suffix.lower()
+                    if _ext in {'.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.webp'}:
+                        st.info("🖼️ Image file detected — OCR will extract text automatically.")
+
                 if uploaded_job_file and st.button("Parse Job Description"):
                     with st.spinner("Parsing job description..."):
                         try:
-                            # Parse job file
+                            # Parse job file (image → OCR, otherwise native parser)
+                            _JOB_IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.webp'}
                             parser = ResumeParser()  # Reuse parser for file reading
                             temp_path = Path("temp") / uploaded_job_file.name
                             temp_path.parent.mkdir(exist_ok=True)
                             with open(temp_path, "wb") as f:
                                 f.write(uploaded_job_file.getbuffer())
-                            job_text = parser.parse_file(temp_path)
+
+                            if temp_path.suffix.lower() in _JOB_IMAGE_EXTS:
+                                from src.extraction.ocr_processor import OCRProcessor
+                                ocr = OCRProcessor()
+                                job_text = ocr.extract_text(temp_path)
+                            else:
+                                job_text = parser.parse_file(temp_path)
                             temp_path.unlink()  # Delete temp file
                             
                             job, error = parse_job_description(job_text)
@@ -449,14 +482,20 @@ def main():
                 
                 # Get email from resume or allow manual input
                 default_email = resume.email or ""
-                
+
                 col_email, col_btn = st.columns([3, 1])
                 with col_email:
                     recipient_email = st.text_input(
-                        "Send Gap Analysis to:",
+                        "Send Gap Analysis to (To):",
                         value=default_email,
-                        placeholder="candidate@example.com",
-                        help="Email address where the gap analysis report will be sent"
+                        placeholder="candidate@example.com, manager@example.com",
+                        help="One or more recipient email addresses separated by commas"
+                    )
+                    cc_email = st.text_input(
+                        "CC (optional):",
+                        value="",
+                        placeholder="hr@example.com, reviewer@example.com",
+                        help="One or more CC email addresses separated by commas (optional)"
                     )
                 
                 with col_btn:
@@ -466,11 +505,14 @@ def main():
                 
                 if send_email_btn:
                     if not recipient_email:
-                        st.error("Please enter a valid email address")
+                        st.error("Please enter at least one recipient email address")
                     elif not st.session_state.sender_email or not st.session_state.sender_password:
                         st.error("⚠️ Please configure email settings in the sidebar first")
                     else:
-                        with st.spinner(f"Sending email to {recipient_email}..."):
+                        to_list = [e.strip() for e in recipient_email.split(',') if e.strip()]
+                        cc_list = [e.strip() for e in cc_email.split(',') if e.strip()] if cc_email else []
+                        display_to = ', '.join(to_list)
+                        with st.spinner(f"Sending email to {display_to}..."):
                             try:
                                 # Generate the gap analysis report text
                                 report_gen = ReportGenerator()
@@ -483,11 +525,12 @@ def main():
                                     timeout=30
                                 )
                                 result = email_sender.send_gap_analysis_report(
-                                    to_email=recipient_email,
+                                    to_email=to_list,
                                     candidate_name=resume.name or "Candidate",
                                     report_content=report_content,
                                     sender_email=st.session_state.sender_email,
-                                    sender_password=st.session_state.sender_password
+                                    sender_password=st.session_state.sender_password,
+                                    cc_email=cc_list if cc_list else None
                                 )
                                 
                                 if result['success']:
@@ -504,7 +547,8 @@ def main():
         st.header("About")
         st.write("""
         This AI-powered system helps automate resume screening by:
-        - Parsing resumes in multiple formats
+        - Parsing resumes in multiple formats (PDF, DOCX, TXT)
+        - **OCR support** for image & scanned resumes (PNG, JPG, TIFF, BMP)
         - Extracting skills, experience, and qualifications
         - Matching candidates with job requirements
         - Identifying skill gaps
@@ -514,9 +558,11 @@ def main():
         
         st.header("How to Use")
         st.write("""
-        1. **Resume Analysis**: Upload or paste a resume to extract information
-        2. **Job Matching**: Enter job description and calculate match score
+        1. **Resume Analysis**: Upload or paste a resume (PDF/DOCX/TXT or image)
+        2. **Job Matching**: Upload or enter a job description (same formats)
         3. **Gap Analysis**: View detailed skill gaps and improvement suggestions
+        
+        *Image files (PNG, JPG, TIFF, BMP) are processed via OCR automatically.*
         """)
         
         st.markdown("---")

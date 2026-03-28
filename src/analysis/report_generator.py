@@ -1,6 +1,6 @@
 """Report generation for screening results"""
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime
 from io import BytesIO
 from ..models.resume import Resume
@@ -200,6 +200,86 @@ class ReportGenerator:
             'match_results': match_result,
             'gap_analysis': gap_analysis
         }
+
+    # ── Evaluation metrics integration ────────────────────────────────────
+
+    def generate_evaluation_report(
+        self,
+        extraction_metrics: Optional[Dict] = None,
+        matching_metrics: Optional[Dict] = None,
+    ) -> str:
+        """
+        Generate a formatted evaluation metrics report.
+
+        Parameters
+        ----------
+        extraction_metrics : dict from ExtractionMetrics.to_dict()
+        matching_metrics   : dict from MatchingMetrics.to_dict()
+
+        If neither is supplied the method runs the evaluators against the
+        bundled sample resumes and job descriptions to produce live results.
+        """
+        # Lazily run evaluators if callers don't supply pre-computed dicts
+        if extraction_metrics is None or matching_metrics is None:
+            try:
+                from ..evaluation.evaluator import ExtractionEvaluator
+                from ..evaluation.matching_evaluator import MatchingEvaluator
+                from ..evaluation.ground_truth import (
+                    ALL_RESUME_ANNOTATIONS,
+                    ALL_JOB_ANNOTATIONS,
+                    JOB_ANNOTATION_MAP,
+                )
+                ext_ev  = ExtractionEvaluator()
+                mat_ev  = MatchingEvaluator()
+                extraction_metrics = ext_ev.evaluate_all(ALL_RESUME_ANNOTATIONS).to_dict()
+                matching_metrics   = mat_ev.evaluate(
+                    ALL_RESUME_ANNOTATIONS, ALL_JOB_ANNOTATIONS, JOB_ANNOTATION_MAP
+                ).to_dict()
+            except Exception as e:
+                return f"[Evaluation failed: {e}]"
+
+        report = []
+        report.append("=" * 80)
+        report.append("SYSTEM EVALUATION REPORT")
+        report.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append("=" * 80)
+        report.append("")
+
+        # ── Extraction metrics table ───────────────────────────────────────
+        report.append("EXTRACTION MODULE METRICS  (Precision / Recall / F1-Score)")
+        report.append("-" * 80)
+        report.append(f"{'Module':<30}  {'Precision':>10}  {'Recall':>8}  {'F1-Score':>10}")
+        report.append("-" * 80)
+
+        for m in extraction_metrics.get("per_module", []):
+            report.append(
+                f"{m['module']:<30}  "
+                f"{m['precision']:>10.2%}  "
+                f"{m['recall']:>8.2%}  "
+                f"{m['f1_score']:>10.4f}"
+            )
+
+        mp = extraction_metrics.get("macro_precision", 0)
+        mr = extraction_metrics.get("macro_recall", 0)
+        mf = extraction_metrics.get("macro_f1", 0)
+        report.append("-" * 80)
+        report.append(f"{'Macro Average':<30}  {mp:>10.2%}  {mr:>8.2%}  {mf:>10.4f}")
+        report.append("")
+
+        # ── Matching metrics ───────────────────────────────────────────────
+        report.append("MATCHING ENGINE METRICS")
+        report.append("-" * 80)
+        acc = matching_metrics.get("shortlisting_accuracy", 0)
+        mae = matching_metrics.get("mean_absolute_error", 0)
+        rho = matching_metrics.get("spearman_rho")
+        n   = matching_metrics.get("n_samples", 0)
+        report.append(f"Shortlisting Accuracy  : {acc:.2%}  (over {n} candidate-job pairs)")
+        report.append(f"Mean Absolute Error    : {mae:.2f} score points")
+        report.append(f"Spearman's Rho (ρ)     : {rho if rho is not None else 'N/A (< 2 rank pairs)'}")
+        report.append("")
+        report.append("=" * 80)
+
+        return "\n".join(report)
     
     def generate_pdf_report(self, resume: Resume, job: JobDescription,
                            match_result: Dict, gap_analysis: Dict) -> BytesIO:

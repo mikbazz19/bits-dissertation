@@ -1,9 +1,10 @@
 """Skill gap analysis"""
 
+import re
 from typing import Dict, List
 from ..models.resume import Resume
 from ..models.job import JobDescription
-from ..utils.helpers import normalize_skill
+from ..utils.helpers import normalize_skill, calculate_experience_years
 
 
 class GapAnalyzer:
@@ -57,20 +58,68 @@ class GapAnalyzer:
             'total_missing': len(missing_required) + len(missing_preferred)
         }
     
+    def _calculate_relevant_experience(self, resume: Resume, job: JobDescription) -> float:
+        """
+        Sum experience years from roles relevant to the job's domain.
+        Builds domain keywords from job title + required skills + job description.
+        """
+        if not resume.experience:
+            return 0.0
+
+        stop_words = {'and', 'the', 'for', 'with', 'senior', 'junior', 'lead',
+                      'staff', 'principal', 'mid', 'level', 'role', 'position',
+                      'company', 'location', 'about', 'our', 'you', 'will', 'join'}
+        domain_words: set = set()
+
+        # From job title
+        for token in re.split(r'\W+', job.title.lower()):
+            if len(token) > 2 and token not in stop_words:
+                domain_words.add(token)
+
+        # From required skills (most reliable signal)
+        for skill in job.required_skills[:15]:
+            for token in re.split(r'\W+', skill.lower()):
+                if len(token) > 2 and token not in stop_words:
+                    domain_words.add(token)
+
+        # From first 500 chars of job description (captures role context)
+        desc_snippet = job.description[:500].lower()
+        for token in re.split(r'\W+', desc_snippet):
+            # Only add longer, likely-meaningful words
+            if len(token) > 4 and token not in stop_words:
+                domain_words.add(token)
+
+        relevant_years = 0.0
+        for exp in resume.experience:
+            haystack = f"{exp.title} {exp.description}".lower()
+            if any(kw in haystack for kw in domain_words):
+                relevant_years += calculate_experience_years(exp.duration)
+
+        return round(relevant_years, 1)
+
     def _analyze_experience_gaps(self, resume: Resume, job: JobDescription) -> Dict:
-        """Analyze experience gaps"""
+        """Analyze experience gaps using domain-relevant experience."""
         required_exp = job.required_experience
-        candidate_exp = resume.total_experience_years
-        
-        gap = max(0, required_exp - candidate_exp)
-        meets_requirement = candidate_exp >= required_exp
-        
+        total_exp = resume.total_experience_years
+        relevant_exp = min(self._calculate_relevant_experience(resume, job), total_exp)
+
+        # Use relevant experience for the gap; fall back to total if no relevant found
+        effective_exp = relevant_exp if relevant_exp > 0 else total_exp
+        gap = max(0, required_exp - effective_exp)
+        meets_requirement = effective_exp >= required_exp
+
         return {
+            'job_domain': job.title,
             'required_experience': required_exp,
-            'candidate_experience': candidate_exp,
+            'relevant_experience': relevant_exp,
+            'total_experience': total_exp,
+            # kept for backward compat
+            'candidate_experience': effective_exp,
             'experience_gap_years': round(gap, 1),
             'meets_requirement': meets_requirement,
-            'percentage_of_requirement': round((candidate_exp / required_exp * 100) if required_exp > 0 else 100, 2)
+            'percentage_of_requirement': round(
+                (effective_exp / required_exp * 100) if required_exp > 0 else 100, 2
+            )
         }
     
     def _analyze_education_gaps(self, resume: Resume, job: JobDescription) -> Dict:
@@ -120,8 +169,11 @@ class GapAnalyzer:
         # Experience-based suggestions
         if not experience_gaps['meets_requirement']:
             gap_years = experience_gaps['experience_gap_years']
+            domain = experience_gaps.get('job_domain', 'this role')
             if gap_years > 2:
-                suggestions.append(f"Gain {gap_years:.1f} more years of relevant experience")
+                suggestions.append(
+                    f"Gain {gap_years:.1f} more years of relevant experience in {domain}"
+                )
                 suggestions.append("Consider internships, freelance projects, or entry-level positions to build experience")
             else:
                 suggestions.append("Highlight relevant projects and transferable skills to compensate for experience gap")
@@ -147,7 +199,7 @@ class GapAnalyzer:
         if len(skill_gaps['missing_required_skills']) > 3:
             priority.append("Critical Skill Gaps")
         
-        # Experience shortfall
+        # Experience shortfall (based on relevant experience)
         if experience_gaps['experience_gap_years'] > 1:
             priority.append("Experience Requirement")
         

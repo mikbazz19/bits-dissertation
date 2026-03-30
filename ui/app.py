@@ -7,6 +7,7 @@ import streamlit as st
 import sys
 from pathlib import Path
 from datetime import datetime
+import tempfile
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -23,6 +24,7 @@ from src.analysis.gap_analyzer import GapAnalyzer
 from src.analysis.report_generator import ReportGenerator
 from src.utils.config import Config
 from src.utils.email_sender import EmailSender
+from src.extraction.parser import IMAGE_EXTENSIONS
 
 # Initialize components
 Config.ensure_directories()
@@ -50,122 +52,220 @@ def initialize_session_state():
         st.session_state.use_ssl = False
 
 
-def parse_resume(file_or_text, is_file=True):
-    """Parse resume and extract information"""
+def _detect_document_type(text: str) -> str:
+    """
+    Return 'resume', 'jd', or 'unknown' based on keyword scoring.
+    Tolerates OCR artifacts (extra spaces before colons, etc.).
+    """
+    import re
+    # Normalise OCR artifacts: collapse spaces around colons and multiple spaces
+    lower = re.sub(r'\s*:\s*', ':', text.lower())
+    lower = re.sub(r'\s+', ' ', lower)
+
+    jd_signals = [
+        r'job\s+description', r'job\s+posting', r'job\s+title', r'about\s+the\s+role',
+        r'about\s+this\s+role',
+        r"we'?re?\s+(?:looking|seeking|hiring)",          # "we are" AND "we're"
+        r'you\s+will\s+be\s+responsible', r'key\s+responsibilities',
+        r'responsibilities', r'requirements', r'qualifications',  # no colon needed
+        r"what\s+you'?ll\s+(?:do|work|build)", r"what\s+we'?re\s+looking\s+for",
+        r'the\s+ideal\s+candidate', r'required\s+qualifications?',
+        r'preferred\s+qualifications?', r'minimum\s+(?:experience|qualifications?)',
+        r'equal\s+opportunity\s+employer', r'salary\s+range', r'compensation',
+        r'benefits\s+include', r'apply\s+now', r'apply\s+today',
+        r'we\s+offer', r'what\s+you\s+bring', r'nice\s+to\s+have',
+    ]
+    resume_signals = [
+        r'curriculum\s+vitae', r'professional\s+summary', r'career\s+objective',
+        r'work\s+history', r'references\s+available', r'objective:',
+        r'summary:', r'certifications?:', r'education:',
+        r'\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4}\s*[-\u2013]\s*(?:present|current|\d{4})',
+        r'[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}',  # email address
+    ]
+
+    jd_score = sum(1 for p in jd_signals if re.search(p, lower))
+    resume_score = sum(1 for p in resume_signals if re.search(p, lower))
+
+    if jd_score >= 2 and jd_score > resume_score:
+        return 'jd'
+    if resume_score >= 2 and resume_score >= jd_score:
+        return 'resume'
+    return 'unknown'
+
+
+def parse_resume(file_or_text, is_file: bool = True):
+    """
+    Parse a resume and return (info_dict, error_string).
+
+    When is_file=True  : file_or_text is a Streamlit UploadedFile.
+    When is_file=False : file_or_text is a plain-text string.
+    """
     try:
-        parser = ResumeParser()
-        
-        # Parse resume text
-        IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.webp'}
+        if not is_file:
+            # ── Text input path ──
+            if _detect_document_type(file_or_text) == 'jd':
+                return None, "This text looks like a Job Description, not a resume. Please paste resume content here."
+            from src.extraction.resume_parser import extract_resume_info
+            info = extract_resume_info(file_or_text)
+            return info, None
 
-        if is_file:
-            # Save uploaded file temporarily
-            temp_path = Path("temp") / file_or_text.name
-            temp_path.parent.mkdir(exist_ok=True)
-            with open(temp_path, "wb") as f:
-                f.write(file_or_text.getbuffer())
+        # ── File upload path ──
+        uploaded_file = file_or_text
+        suffix = Path(uploaded_file.name).suffix.lower()
 
-            if temp_path.suffix.lower() in IMAGE_EXTS:
-                # Image/scanned resume — route through OCR
-                from src.extraction.ocr_processor import OCRProcessor, TESSERACT_AVAILABLE
-                if not TESSERACT_AVAILABLE:
-                    temp_path.unlink()
-                    return None, (
-                        "OCR dependencies not installed. "
-                        "Run: pip install pytesseract Pillow opencv-python"
-                    )
-                ocr = OCRProcessor()
-                resume_text = ocr.extract_text(temp_path)
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=suffix
+        ) as tmp:
+            tmp.write(uploaded_file.read())
+            tmp_path = Path(tmp.name)
+
+        try:
+            if suffix in IMAGE_EXTENSIONS:
+                # ── OCR path: extract text AND split into sections ──
+                from src.extraction.ocr_processor import OCRProcessor
+                processor = OCRProcessor()
+                sections  = processor.extract_sections(tmp_path)
+                raw_text  = sections.pop("raw_text", "")
+
+                if _detect_document_type(raw_text) == 'jd':
+                    return None, "This file looks like a Job Description, not a resume. Please upload a resume file here."
+                from src.extraction.resume_parser import extract_resume_info
+                info = extract_resume_info(raw_text, ocr_sections=sections)
+                return info, None
+
             else:
-                resume_text = parser.parse_file(temp_path)
+                # ── Native path: PDF / DOCX / TXT ──
+                from src.extraction.parser import parse_document
+                from src.extraction.resume_parser import extract_resume_info
+                text = parse_document(tmp_path)
+                if _detect_document_type(text) == 'jd':
+                    return None, "This file looks like a Job Description, not a resume. Please upload a resume file here."
+                return extract_resume_info(text), None
 
-            temp_path.unlink()  # Delete temp file
-        else:
-            resume_text = file_or_text
-        
-        # Extract entities
-        entity_extractor = EntityExtractor()
-        entities = entity_extractor.extract_all_entities(resume_text)
-        
-        # Extract skills
-        skill_extractor = SkillExtractor()
-        skills = skill_extractor.extract_skills(resume_text)
-        
-        # Extract experience
-        experience_extractor = ExperienceExtractor()
-        preprocessor = TextPreprocessor()
-        sections = preprocessor.extract_sections(resume_text)
-        
-        experiences = experience_extractor.extract_experience(
-            resume_text, 
-            sections.get('experience', '')
-        )
-        
-        total_exp = experience_extractor.calculate_total_experience(experiences)
-        
-        # If no experience extracted, try to get from summary
-        if total_exp == 0:
-            summary_exp = experience_extractor.extract_experience_summary(resume_text)
-            if summary_exp:
-                total_exp = summary_exp
-        
-        # Build education list
-        education_list = []
-        for edu in entities.get('education', []):
-            education_list.append(Education(
-                degree=edu.get('degree', ''),
-                institution=edu.get('institution', 'N/A'),
-                year=edu.get('year'),
-                grade=None
-            ))
-        
-        # Create Resume object
-        resume = Resume(
-            raw_text=resume_text,
-            name=entities.get('name'),
-            email=entities.get('email'),
-            phone=entities.get('phone'),
-            skills=skills,
-            education=education_list,
-            experience=experiences,
-            certifications=entities.get('certifications', []),
-            total_experience_years=total_exp
-        )
-        
-        return resume, None
-    
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+    except EnvironmentError as e:
+        return None, str(e)
+    except ImportError as e:
+        return None, f"OCR library missing: {e}"
     except Exception as e:
         return None, str(e)
+
+
+def _extract_jd_role_and_company(text: str):
+    """Extract job role title and company name from arbitrary JD formats."""
+    import re
+    lines = [ln.strip() for ln in text.strip().splitlines() if ln.strip()]
+    if not lines:
+        return "Software Engineer", "Company"
+
+    # Patterns that indicate metadata lines, NOT the role title
+    meta_re = re.compile(
+        r'^(?:company|location|department|job\s*id|date|posted|about\s+us|'
+        r'website|email|phone|contact|salary|compensation|industry)\s*[:\-]',
+        re.IGNORECASE
+    )
+    # Keywords that strongly indicate a job-role line
+    role_re = re.compile(
+        r'\b(?:engineer|developer|manager|analyst|scientist|consultant|designer|'
+        r'architect|lead|director|specialist|intern|associate|programmer|'
+        r'administrator|devops|mlops|researcher|officer|executive)\b',
+        re.IGNORECASE
+    )
+
+    title = None
+    company = None
+
+    # 1. Explicit labels anywhere in first 10 lines
+    for line in lines[:10]:
+        if not title:
+            m = re.match(r'(?:position|job\s+title|role|title)\s*[:\-]\s*(.+)', line, re.IGNORECASE)
+            if m:
+                title = m.group(1).strip()
+        if not company:
+            m = re.match(r'company\s*[:\-]\s*(.+)', line, re.IGNORECASE)
+            if m:
+                company = m.group(1).strip()
+
+    # 2. First non-metadata line that contains a role keyword
+    if not title:
+        for line in lines[:8]:
+            if meta_re.match(line):
+                continue
+            if role_re.search(line) and len(line) < 100:
+                # Strip trailing "| Location" noise
+                title = re.split(r'\s*\|\s*', line)[0].strip()
+                break
+
+    # 3. "TechCorp | City" style second line → company
+    if not company:
+        for line in lines[:5]:
+            if '|' in line and not role_re.search(line):
+                company = line.split('|')[0].strip()
+                break
+
+    # 4. Fall back: first non-metadata, non-blank line for title
+    if not title:
+        for line in lines[:5]:
+            if not meta_re.match(line):
+                title = re.split(r'\s*\|\s*', line)[0].strip()
+                break
+
+    return (title or "Software Engineer"), (company or "Company")
 
 
 def parse_job_description(text):
     """Parse job description"""
     try:
+        import re
         parser = JobDescriptionParser()
         parsed = parser.parse_text(text)
-        
+
         # Extract skills from requirements
         skill_extractor = SkillExtractor()
         all_skills = skill_extractor.extract_skills(text)
-        
+
         # Split into required and preferred (simplified logic)
         required_skills = all_skills[:len(all_skills)//2] if len(all_skills) > 4 else all_skills
         preferred_skills = all_skills[len(all_skills)//2:] if len(all_skills) > 4 else []
-        
-        # Extract experience requirement
-        required_exp = parsed.get('experience', 0) or 0
-        if required_exp == 0:
-            # Try to extract from text
-            import re
-            match = re.search(r'(\d+)\+?\s*years?', text, re.IGNORECASE)
-            if match:
-                required_exp = float(match.group(1))
-        
-        # Extract title and company
-        lines = text.strip().split('\n')
-        title = lines[0].strip() if lines else "Software Engineer"
-        company = "Company Name"
-        
+
+        # Required experience — use parser first, then progressively broader fallbacks
+        required_exp = parsed.get('experience') or 0
+        if not required_exp:
+            # Normalise common OCR digit/letter confusions before pattern matching
+            _ocr_map = [
+                (r'\bS(\s*\+?\s*(?:years?|yrs?))', r'5\1'),
+                (r'\bO(\s*\+?\s*(?:years?|yrs?))', r'0\1'),
+                (r'\bl(\s*\+?\s*(?:years?|yrs?))', r'1\1'),
+                (r'\bI(\s*\+?\s*(?:years?|yrs?))', r'1\1'),
+                (r'\bB(\s*\+?\s*(?:years?|yrs?))', r'8\1'),
+            ]
+            normalised_text = text
+            for _pat, _rep in _ocr_map:
+                normalised_text = re.sub(_pat, _rep, normalised_text, flags=re.IGNORECASE)
+
+            exp_patterns = [
+                # "5+ years of Data Engineering experience"
+                r'(\d{1,2})\s*\+?\s*(?:years?|yrs?)[\s,]+of[\s,]+[\w\s]{0,60}?experience',
+                # "5+ years experience" / "5+ years of experience"
+                r'(\d{1,2})\s*\+?\s*(?:years?|yrs?)[\s,]+(?:of[\s,]+)?experience',
+                # "experience of X years" / "experience: X years"
+                r'experience[:\s]+(?:of\s+)?(\d{1,2})\s*\+?\s*(?:years?|yrs?)',
+                # "at least X" / "minimum X"
+                r'(?:at\s+least|minimum|min\.?)\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?)',
+                # range "3-5 years" — take lower bound
+                r'(\d{1,2})\s*[-\u2013]\s*\d{1,2}\s*(?:years?|yrs?)',
+            ]
+            for pat in exp_patterns:
+                m = re.search(pat, normalised_text, re.IGNORECASE)
+                if m:
+                    required_exp = float(m.group(1))
+                    break
+
+        # Extract role title and company
+        title, company = _extract_jd_role_and_company(text)
+
         job = JobDescription(
             title=title,
             company=company,
@@ -177,9 +277,9 @@ def parse_job_description(text):
             responsibilities=[],
             qualifications=[]
         )
-        
+
         return job, None
-    
+
     except Exception as e:
         return None, str(e)
 
@@ -223,7 +323,7 @@ def main():
                         resume, error = parse_resume(uploaded_file, is_file=True)
                         
                         if error:
-                            st.error(f"Error: {error}")
+                            st.error(error)
                         else:
                             st.session_state.resume = resume
                             st.session_state.resume_parsed = True
@@ -236,7 +336,7 @@ def main():
                         resume, error = parse_resume(resume_text, is_file=False)
                         
                         if error:
-                            st.error(f"Error: {error}")
+                            st.error(error)
                         else:
                             st.session_state.resume = resume
                             st.session_state.resume_parsed = True
@@ -263,18 +363,26 @@ def main():
                 st.write("**Education:**")
                 if resume.education:
                     for edu in resume.education:
-                        st.write(f"- {edu.degree} from {edu.institution}")
+                        degree_label = edu.degree
+                        if edu.stream:
+                            degree_label += f" in {edu.stream}"
+                        parts = [degree_label]
+                        if edu.institution:
+                            parts.append(edu.institution)
+                        if edu.year:
+                            parts.append(edu.year)
+                        st.write(f"- {', '.join(parts)}")
                 else:
                     st.write("No education information found")
                 
-                st.write("**Experience:**")
-                if resume.experience:
-                    for exp in resume.experience[:3]:
-                        st.write(f"- {exp.title} at {exp.company}")
+                st.write("**Certifications:**")
+                if resume.certifications:
+                    for cert in resume.certifications:
+                        st.write(f"- {cert}")
                 else:
-                    st.write("No work experience found")
+                    st.write("No certifications found")
             else:
-                st.info("Upload and parse a resume to see extracted information")
+                st.info("Upload/Paste and parse a resume to see extracted information")
     
     # Tab 2: Job Matching
     with tab2:
@@ -301,6 +409,7 @@ def main():
 
                 if uploaded_job_file and st.button("Parse Job Description"):
                     with st.spinner("Parsing job description..."):
+                        _jd_validation_err = None
                         try:
                             # Parse job file (image → OCR, otherwise native parser)
                             _JOB_IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.webp'}
@@ -317,21 +426,28 @@ def main():
                             else:
                                 job_text = parser.parse_file(temp_path)
                             temp_path.unlink()  # Delete temp file
-                            
-                            job, error = parse_job_description(job_text)
-                            
-                            if error:
-                                st.error(f"Error: {error}")
+
+                            if _detect_document_type(job_text) == 'resume':
+                                _jd_validation_err = "This file looks like a Resume, not a Job Description. Please upload a JD file here."
                             else:
-                                st.session_state.job = job
-                                st.session_state.job_parsed = True
-                                st.success("✅ Job description parsed!")
+                                job, error = parse_job_description(job_text)
+                                if error:
+                                    st.error(f"Error: {error}")
+                                else:
+                                    st.session_state.job = job
+                                    st.session_state.job_parsed = True
+                                    st.success("✅ Job description parsed!")
                         except Exception as e:
                             st.error(f"Error parsing file: {str(e)}")
+                    if _jd_validation_err:
+                        st.error(_jd_validation_err)
             else:
                 job_text = st.text_area("Enter Job Description:", height=300, key="job_text")
                 
                 if job_text and st.button("Parse Job Description"):
+                    if _detect_document_type(job_text) == 'resume':
+                        st.error("This text looks like a Resume, not a Job Description. Please paste JD content here.")
+                        st.stop()
                     job, error = parse_job_description(job_text)
                     
                     if error:
@@ -412,9 +528,17 @@ def main():
                     # Experience gaps
                     st.subheader("Experience Analysis")
                     exp_gaps = gap_analysis['experience_gaps']
-                    st.write(f"Required: {exp_gaps['required_experience']} years")
-                    st.write(f"Candidate: {exp_gaps['candidate_experience']} years")
-                    
+                    domain = exp_gaps.get('job_domain', 'this role')
+                    st.write(f"**Relevant Experience in {domain}:**")
+                    st.write(f"- Required: {exp_gaps['required_experience']} years")
+
+                    relevant = exp_gaps['relevant_experience']
+                    total = exp_gaps['total_experience']
+                    if relevant > 0 and relevant != total:
+                        st.write(f"- Candidate: {relevant} years  *(overall: {total} years)*")
+                    else:
+                        st.write(f"- Candidate: {total} years")
+
                     if exp_gaps['meets_requirement']:
                         st.success("✅ Meets experience requirement")
                     else:
@@ -475,64 +599,107 @@ def main():
                 
                 # Email sending section
                 st.markdown("---")
-                st.subheader("📧 Email Gap Analysis Report")
-                
+
                 resume = st.session_state.resume
+                job = st.session_state.job
                 gap_analysis = st.session_state.gap_analysis
-                
-                # Get email from resume or allow manual input
+                match_result = st.session_state.get('match_result', {})
+
+                # ── Shortlist / Rejection decision ──────────────────────────
+                overall_score = match_result.get('overall_score', 0)
+                SHORTLIST_THRESHOLD = 70  # % — adjust as needed
+
+                is_shortlisted = overall_score >= SHORTLIST_THRESHOLD
+
+                if is_shortlisted:
+                    st.subheader("🎉 Shortlisting Decision")
+                    st.success(
+                        f"✅ **Shortlisted** — Overall match score {overall_score}% "
+                        f"meets the threshold ({SHORTLIST_THRESHOLD}%). "
+                        f"Candidate is recommended for interview."
+                    )
+                    email_section_label = "📧 Send Interview Invitation"
+                    email_btn_label = "📤 Send Shortlist Email"
+                else:
+                    st.subheader("📋 Shortlisting Decision")
+                    st.warning(
+                        f"❌ **Not Shortlisted** — Overall match score {overall_score}% "
+                        f"is below the threshold ({SHORTLIST_THRESHOLD}%). "
+                        f"A rejection email with Gap Analysis will be sent."
+                    )
+                    email_section_label = "📧 Send Rejection Email with Gap Report"
+                    email_btn_label = "📤 Send Rejection Email"
+
+                # ── Email inputs ─────────────────────────────────────────────
+                st.subheader(email_section_label)
                 default_email = resume.email or ""
 
                 col_email, col_btn = st.columns([3, 1])
                 with col_email:
                     recipient_email = st.text_input(
-                        "Send Gap Analysis to (To):",
+                        "Recipient Email (To):",
                         value=default_email,
-                        placeholder="candidate@example.com, manager@example.com",
-                        help="One or more recipient email addresses separated by commas"
+                        placeholder="candidate@example.com",
+                        key="notify_to",
+                        help="One or more addresses separated by commas"
                     )
-                    cc_email = st.text_input(
+                    cc_email_input = st.text_input(
                         "CC (optional):",
                         value="",
-                        placeholder="hr@example.com, reviewer@example.com",
-                        help="One or more CC email addresses separated by commas (optional)"
+                        placeholder="hr@example.com",
+                        key="notify_cc",
+                        help="One or more CC addresses separated by commas"
                     )
-                
+
                 with col_btn:
-                    st.write("")  # Spacer for alignment
-                    st.write("")  # Spacer for alignment
-                    send_email_btn = st.button("📤 Send Email", type="secondary")
-                
+                    st.write("")
+                    st.write("")
+                    send_email_btn = st.button(email_btn_label, type="secondary")
+
                 if send_email_btn:
-                    if not recipient_email:
-                        st.error("Please enter at least one recipient email address")
+                    if not recipient_email.strip():
+                        st.error("Please enter at least one recipient email address.")
                     elif not st.session_state.sender_email or not st.session_state.sender_password:
-                        st.error("⚠️ Please configure email settings in the sidebar first")
+                        st.error("⚠️ Please configure email settings in the sidebar first.")
                     else:
                         to_list = [e.strip() for e in recipient_email.split(',') if e.strip()]
-                        cc_list = [e.strip() for e in cc_email.split(',') if e.strip()] if cc_email else []
+                        cc_list = [e.strip() for e in cc_email_input.split(',') if e.strip()]
                         display_to = ', '.join(to_list)
+
                         with st.spinner(f"Sending email to {display_to}..."):
                             try:
-                                # Generate the gap analysis report text
-                                report_gen = ReportGenerator()
-                                report_content = report_gen.generate_gap_report(gap_analysis)
-                                
-                                # Send email with configured settings
                                 email_sender = EmailSender(
                                     smtp_port=st.session_state.smtp_port,
                                     use_ssl=st.session_state.use_ssl,
                                     timeout=30
                                 )
-                                result = email_sender.send_gap_analysis_report(
-                                    to_email=to_list,
-                                    candidate_name=resume.name or "Candidate",
-                                    report_content=report_content,
+                                creds = dict(
                                     sender_email=st.session_state.sender_email,
                                     sender_password=st.session_state.sender_password,
-                                    cc_email=cc_list if cc_list else None
+                                    cc_email=cc_list or None
                                 )
-                                
+
+                                if is_shortlisted:
+                                    result = email_sender.send_shortlist_email(
+                                        to_email=to_list,
+                                        candidate_name=resume.name or "Candidate",
+                                        company_name=job.company or "Our Company",
+                                        job_title=job.title or "the applied position",
+                                        **creds
+                                    )
+                                else:
+                                    # Build gap report text for the rejection email
+                                    report_gen = ReportGenerator()
+                                    gap_report_text = report_gen.generate_gap_report(gap_analysis)
+                                    result = email_sender.send_rejection_email(
+                                        to_email=to_list,
+                                        candidate_name=resume.name or "Candidate",
+                                        company_name=job.company or "Our Company",
+                                        job_title=job.title or "the applied position",
+                                        gap_report=gap_report_text,
+                                        **creds
+                                    )
+
                                 if result['success']:
                                     st.success(f"✅ {result['message']}")
                                 else:
@@ -541,7 +708,7 @@ def main():
                                 st.error(f"Error sending email: {str(e)}")
         else:
             st.info("Please complete resume and job matching analysis first")
-    
+
     # Sidebar with information
     with st.sidebar:
         st.header("About")

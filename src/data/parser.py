@@ -122,15 +122,35 @@ class JobDescriptionParser:
     
     def _extract_experience_requirement(self, text: str) -> Optional[float]:
         """Extract required years of experience"""
-        patterns = [
-            r'(\d+)\+?\s*(?:years?|yrs?)\s*(?:of)?\s*experience',
-            r'experience[:\s]+(\d+)\+?\s*(?:years?|yrs?)',
-            r'minimum\s*(\d+)\s*(?:years?|yrs?)'
+        # Normalise common OCR digit/letter confusions before pattern matching
+        # e.g. "S+ years" (OCR misread of "5+") -> "5+ years"
+        ocr_map = [
+            (r'\bS(\s*\+?\s*(?:years?|yrs?))', r'5\1'),
+            (r'\bO(\s*\+?\s*(?:years?|yrs?))', r'0\1'),
+            (r'\bl(\s*\+?\s*(?:years?|yrs?))', r'1\1'),
+            (r'\bI(\s*\+?\s*(?:years?|yrs?))', r'1\1'),
+            (r'\bB(\s*\+?\s*(?:years?|yrs?))', r'8\1'),
         ]
-        
+        normalised = text
+        for pat, rep in ocr_map:
+            normalised = re.sub(pat, rep, normalised, flags=re.IGNORECASE)
+
+        patterns = [
+            # "5+ years of Data Engineering experience"
+            r'(\d{1,2})\s*\+?\s*(?:years?|yrs?)[\s,]+of[\s,]+[\w\s]{0,60}?experience',
+            # "5+ years experience" / "5+ years of experience"
+            r'(\d{1,2})\s*\+?\s*(?:years?|yrs?)[\s,]+(?:of[\s,]+)?experience',
+            # "experience: 5+ years" / "experience of 5 years"
+            r'experience[:\s]+(?:of\s+)?(\d{1,2})\s*\+?\s*(?:years?|yrs?)',
+            # "minimum 5 years" / "at least 5 years"
+            r'(?:minimum|at\s+least|min\.?)\s*(\d{1,2})\s*\+?\s*(?:years?|yrs?)',
+            # Range "3-5 years" — take the lower bound
+            r'(\d{1,2})\s*[-–]\s*\d{1,2}\s*(?:years?|yrs?)',
+        ]
+
         for pattern in patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
+            match = re.search(pattern, normalised, re.IGNORECASE)
             if match:
                 return float(match.group(1))
-        
+
         return None

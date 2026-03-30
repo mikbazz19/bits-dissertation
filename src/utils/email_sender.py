@@ -101,8 +101,6 @@ class EmailSender:
         email_body = f"""
 Dear {candidate_name or 'Candidate'},
 
-Thank you for your interest in improving your professional profile!
-
 Please find below your personalized Gap Analysis Report. This report highlights areas where you can focus your efforts to better align with job market requirements and enhance your career prospects.
 
 {'=' * 80}
@@ -176,11 +174,174 @@ This is an automated message. Please do not reply to this email.
                 'success': False,
                 'message': f'Error sending email: {str(e)}'
             }
-    
+
+    # ------------------------------------------------------------------
+    # Shortlist / Rejection emails
+    # ------------------------------------------------------------------
+
+    def send_shortlist_email(self,
+                             to_email: Union[str, List[str]],
+                             candidate_name: str,
+                             company_name: str,
+                             job_title: str,
+                             sender_email: Optional[str] = None,
+                             sender_password: Optional[str] = None,
+                             cc_email: Optional[Union[str, List[str]]] = None) -> Dict:
+        """Send an interview-availability confirmation email to a shortlisted candidate."""
+        if not sender_email:
+            sender_email = os.getenv('SENDER_EMAIL')
+        if not sender_password:
+            sender_password = os.getenv('SENDER_PASSWORD')
+        if not sender_email or not sender_password:
+            return {'success': False,
+                    'message': 'Email credentials not configured.'}
+
+        if isinstance(to_email, str):
+            to_list = [a.strip() for a in to_email.split(',') if a.strip()]
+        else:
+            to_list = [a.strip() for a in to_email if a.strip()]
+        if isinstance(cc_email, str):
+            cc_list = [a.strip() for a in cc_email.split(',') if a.strip()]
+        elif cc_email:
+            cc_list = list(cc_email)
+        else:
+            cc_list = []
+
+        if not to_list:
+            return {'success': False, 'message': 'No valid recipient addresses.'}
+
+        subject = f"Interview Availability Confirmation for {company_name}"
+        body = (
+            f"Dear {candidate_name},\n\n"
+            f"We are pleased to inform you that your profile has been shortlisted for the "
+            f"{job_title} position at {company_name}.\n\n"
+            f"We would like to know your availability and interest in proceeding with the "
+            f"interview process. If you are interested, kindly reply to this email with your "
+            f"consent, and we will coordinate with you to schedule an interview session at a "
+            f"mutually convenient time.\n\n"
+            f"We look forward to your response.\n\n"
+            f"Best regards,\n"
+            f"Talent Acquisition Team\n"
+            f"{company_name}\n\n"
+            f"---\n"
+            f"This is an automated notification. Please reply directly to this email to confirm\n"
+            f"your interest."
+        )
+        return self._send(to_list, cc_list, subject, body, sender_email, sender_password)
+
+    def send_rejection_email(self,
+                             to_email: Union[str, List[str]],
+                             candidate_name: str,
+                             company_name: str,
+                             job_title: str,
+                             gap_report: str,
+                             sender_email: Optional[str] = None,
+                             sender_password: Optional[str] = None,
+                             cc_email: Optional[Union[str, List[str]]] = None) -> Dict:
+        """Send a professional rejection email with the gap analysis report attached inline."""
+        if not sender_email:
+            sender_email = os.getenv('SENDER_EMAIL')
+        if not sender_password:
+            sender_password = os.getenv('SENDER_PASSWORD')
+        if not sender_email or not sender_password:
+            return {'success': False,
+                    'message': 'Email credentials not configured.'}
+
+        if isinstance(to_email, str):
+            to_list = [a.strip() for a in to_email.split(',') if a.strip()]
+        else:
+            to_list = [a.strip() for a in to_email if a.strip()]
+        if isinstance(cc_email, str):
+            cc_list = [a.strip() for a in cc_email.split(',') if a.strip()]
+        elif cc_email:
+            cc_list = list(cc_email)
+        else:
+            cc_list = []
+
+        if not to_list:
+            return {'success': False, 'message': 'No valid recipient addresses.'}
+
+        subject = f"Application Update – {job_title} at {company_name}"
+        separator = "=" * 70
+        body = (
+            f"Dear {candidate_name},\n\n"
+            f"Thank you for your interest in the {job_title} position at {company_name} "
+            f"and for taking the time to apply.\n\n"
+            f"After careful consideration, we regret to inform you that your application has "
+            f"not been shortlisted for further stages of the selection process. While your "
+            f"qualifications are commendable, we have decided to move forward with candidates "
+            f"whose profiles more closely match our current requirements.\n\n"
+            f"We truly appreciate your interest in joining our organisation and encourage you "
+            f"to apply for future opportunities that align with your experience and skills.\n\n"
+            f"Please find below your personalised Gap Analysis Report. This report highlights "
+            f"areas where you can focus your efforts to better align with job market requirements "
+            f"and enhance your career prospects.\n\n"
+            f"{separator}\n"
+            f"GAP ANALYSIS REPORT\n"
+            f"{separator}\n\n"
+            f"{gap_report}\n\n"
+            f"{separator}\n\n"
+            f"Wishing you all the best in your job search.\n\n"
+            f"Best regards,\n"
+            f"Talent Acquisition Team\n"
+            f"{company_name}\n\n"
+            f"---\n"
+            f"This is an automated notification."
+        )
+        return self._send(to_list, cc_list, subject, body, sender_email, sender_password)
+
+    # ------------------------------------------------------------------
+    # Shared send helper
+    # ------------------------------------------------------------------
+
+    def _send(self, to_list: List[str], cc_list: List[str],
+              subject: str, body: str,
+              sender_email: str, sender_password: str) -> Dict:
+        """Internal method: build message and send via SMTP."""
+        message = MIMEMultipart()
+        message['From'] = sender_email
+        message['To'] = ', '.join(to_list)
+        if cc_list:
+            message['Cc'] = ', '.join(cc_list)
+        message['Subject'] = subject
+        message.attach(MIMEText(body, 'plain'))
+
+        try:
+            if self.use_ssl:
+                server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port,
+                                          timeout=self.timeout)
+            else:
+                server = smtplib.SMTP(self.smtp_server, self.smtp_port,
+                                      timeout=self.timeout)
+                server.starttls()
+
+            server.login(sender_email, sender_password)
+            server.send_message(message, to_addrs=to_list + cc_list)
+            server.quit()
+
+            to_display = ', '.join(to_list)
+            cc_display = f' (CC: {", ".join(cc_list)})' if cc_list else ''
+            return {'success': True,
+                    'message': f'Email sent to {to_display}{cc_display}'}
+
+        except socket.timeout:
+            return {'success': False,
+                    'message': (f'Connection timeout reaching '
+                                f'{self.smtp_server}:{self.smtp_port}.')}
+        except socket.error as e:
+            return {'success': False, 'message': f'Network error: {e}'}
+        except smtplib.SMTPAuthenticationError:
+            return {'success': False,
+                    'message': ('Authentication failed. For Gmail use an App Password.')}
+        except smtplib.SMTPException as e:
+            return {'success': False, 'message': f'SMTP error: {e}'}
+        except Exception as e:
+            return {'success': False, 'message': f'Error sending email: {e}'}
+
     def test_connection(self, sender_email: str, sender_password: str) -> Dict:
         """
         Test SMTP connection and credentials
-        
+
         Args:
             sender_email: Sender's email
             sender_password: Sender's password

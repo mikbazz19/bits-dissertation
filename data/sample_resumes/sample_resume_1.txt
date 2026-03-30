@@ -26,7 +26,7 @@ June 2019 - February 2021
 - Collaborated with cross-functional teams in Agile environment
 - Technologies: JavaScript, React, Node.js, Express, MongoDB, Git
 
-Junior Software Developer
+Junior Software Engineer
 StartUp Labs, Remote
 August 2017 - May 2019
 - Built and maintained web applications using Django and Flask

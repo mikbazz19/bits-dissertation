@@ -12,6 +12,7 @@ class Education:
     institution: str
     year: Optional[str] = None
     grade: Optional[str] = None
+    stream: Optional[str] = None
 
 
 @dataclass
@@ -49,6 +50,7 @@ class Resume:
             'education': [
                 {
                     'degree': edu.degree,
+                    'stream': edu.stream,
                     'institution': edu.institution,
                     'year': edu.year,
                     'grade': edu.grade

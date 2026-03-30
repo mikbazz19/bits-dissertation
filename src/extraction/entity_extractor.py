@@ -67,7 +67,7 @@ class EntityExtractor:
                 # Extract year
                 year_match = re.search(r'\b(19|20)\d{2}\b', edu_entry)
                 year = year_match.group(0) if year_match else None
-                
+
                 # Extract institution (often in the same line)
                 lines = edu_entry.split('\n')
                 institution = None
@@ -75,51 +75,91 @@ class EntityExtractor:
                     if any(word in line.lower() for word in ['university', 'college', 'institute', 'school']):
                         institution = clean_text(line)
                         break
-                
+
+                # Extract stream: "in Computer Science", "in Electronics & Communication", etc.
+                stream_match = re.search(
+                    r'\bin\s+([A-Z][A-Za-z\s&()/]+?)(?=\s+(?:from|at|of)\b|\s*,|\s*[–\-]|\s*\(|\s*\d{4}|\s*$)',
+                    edu_entry, re.IGNORECASE
+                )
+                stream = stream_match.group(1).strip().rstrip(',') if stream_match else None
+
                 education_list.append({
                     'degree': degree,
                     'institution': institution,
                     'year': year,
+                    'stream': stream,
                     'raw_text': clean_text(edu_entry)
                 })
         
         return education_list
     
     def extract_certifications(self, text: str) -> List[str]:
-        """Extract certifications"""
-        certifications = []
-        
-        # Common certification patterns
-        cert_patterns = [
-            r'(?:AWS|Azure|Google Cloud)\s+Certified\s+[A-Za-z\s]+',
-            r'(?:PMP|CISSP|CISA|CEH|CompTIA)\s*[A-Z+]*',
-            r'Certified\s+[A-Za-z\s]+(?:Professional|Expert|Associate|Specialist)',
-            r'[A-Z]+\s+Certification'
+        """Extract certifications, preferring a dedicated section over loose regex."""
+        certifications: List[str] = []
+        seen_norm: set = set()
+
+        def _add(cert: str) -> None:
+            cert = cert.strip().strip('•-–* \t')
+            # Reject very short strings, bare-word noise, and anything that looks
+            # like it came from a skills list (e.g. "Design Certification")
+            if len(cert) < 8:
+                return
+            # Must contain at least two words to be a real cert name
+            if len(cert.split()) < 2:
+                return
+            norm = re.sub(r'\s+', ' ', cert.lower())
+            if norm in seen_norm:
+                return
+            # Reject if it is a substring of an already-added certification
+            if any(norm in existing for existing in seen_norm):
+                return
+            # Reject if any already-added cert is a substring of the new one —
+            # replace the shorter one with this more complete version
+            to_remove = [ex for ex in seen_norm if ex in norm]
+            for ex in to_remove:
+                seen_norm.discard(ex)
+                idx = next((i for i, c in enumerate(certifications)
+                            if re.sub(r'\s+', ' ', c.lower()) == ex), None)
+                if idx is not None:
+                    certifications.pop(idx)
+            seen_norm.add(norm)
+            certifications.append(cert)
+
+        # ── 1. Prefer the dedicated CERTIFICATIONS section ──────────────────
+        cert_section_pattern = (
+            r'(?:^|\n)[ \t]*(?:CERTIFICATIONS?|Licen[sc]es?\s*(?:&|and)\s*Certifications?|'
+            r'Professional\s+Certifications?|Accreditations?)'
+            r'[ \t]*\n(.*?)(?=\n[ \t]*[A-Z][A-Z\s]{2,}\n|\Z)'
+        )
+        sec_match = re.search(cert_section_pattern, text, re.DOTALL | re.IGNORECASE)
+
+        if sec_match:
+            section_text = sec_match.group(1)
+            for line in section_text.splitlines():
+                line = re.sub(r'^[\s•\-–*►▪\d\.]+', '', line).strip()
+                # Strip trailing year in parens: "(2022)"
+                line = re.sub(r'\s*\(\d{4}\)\s*$', '', line).strip()
+                if line:
+                    _add(line)
+
+        # ── 2. Supplement with well-known cert name patterns (avoid noise) ──
+        # Only add if not already captured from the section
+        targeted_patterns = [
+            r'(?:AWS|Azure|Microsoft|Google Cloud|GCP)\s+Certified\s+[A-Za-z][A-Za-z\s\-–]+?(?=\s*[\(\d]|\s*$|\n)',
+            r'(?:PMP|CISSP|CISA|CEH|CISM|CRISC|CPA|CFA)\b',
+            r'Certified\s+(?:Scrum\s+Master|Kubernetes\s+Administrator|Data\s+Scientist|'
+            r'Cloud\s+Practitioner|Solutions\s+Architect|DevOps\s+Engineer|'
+            r'Developer|Professional|Associate|Specialist)(?:\s*\([^\)]*\))?',
+            r'(?:ITIL|Prince2|CompTIA\s+\w+)\s+(?:Foundation|Practitioner|Certified|[A-Z]\+)',
         ]
-        
-        for pattern in cert_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                cert = clean_text(match.group(0))
-                if cert and cert not in certifications:
-                    certifications.append(cert)
-        
-        # Also look in certifications section
-        cert_section_pattern = r'(?:CERTIFICATIONS?|Certifications?)(.*?)(?=\n\n[A-Z]{2,}|\Z)'
-        match = re.search(cert_section_pattern, text, re.DOTALL | re.IGNORECASE)
-        
-        if match:
-            section_text = match.group(1)
-            # Extract bullet points or lines
-            lines = section_text.split('\n')
-            for line in lines:
-                line = clean_text(line)
-                if line and len(line) > 5 and not line.startswith('•'):
-                    line = line.lstrip('• -–')
-                    if line and line not in certifications:
-                        certifications.append(line)
-        
-        return certifications[:10]  # Limit to 10
+        for pattern in targeted_patterns:
+            for m in re.finditer(pattern, text, re.IGNORECASE):
+                candidate = m.group(0).strip()
+                # Strip trailing year in parens
+                candidate = re.sub(r'\s*\(\d{4}\)\s*$', '', candidate).strip()
+                _add(candidate)
+
+        return certifications[:15]
     
     def extract_linkedin(self, text: str) -> Optional[str]:
         """Extract LinkedIn profile URL"""

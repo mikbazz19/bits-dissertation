@@ -35,7 +35,12 @@ class ExperienceExtractor:
             r'([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))\s+(?:at|@)\s+([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Za-z]+\s+\d{4}\s*[-–—]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
             
             # Pattern 2: Company - Title (Date - Date)
-            r'([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))[\s\n]+([A-Za-z]+\s+\d{4}\s*[-–—]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))'
+            r'([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))[\s\n]+([A-Za-z]+\s+\d{4}\s*[-\u2013\u2014]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
+
+            # Pattern 3: Title (alone on line), Company (next line), Date range (next line)
+            r'^([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist|Intern|Trainee))\s*$\n'
+            r'^([A-Z][A-Za-z\s&\.,]+(?:Inc|Corp|Ltd|LLC|Solutions|Technologies|Systems|Labs?|Group|Company|Services|Co)[\.\s,]*).*$\n'
+            r'^([A-Za-z]+\s+\d{4}\s*[-\u2013\u2014]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
         ]
         
         for pattern in patterns:
@@ -79,19 +84,20 @@ class ExperienceExtractor:
         return round(total_years, 1)
     
     def extract_experience_summary(self, text: str) -> Optional[float]:
-        """Extract total years of experience mentioned in summary"""
+        """Extract total years of experience mentioned in summary/profile"""
         patterns = [
-            r'(\d+)\+?\s*years?\s+of\s+experience',
-            r'experience\s+of\s+(\d+)\+?\s*years?',
-            r'(\d+)\+?\s*years?\s+in\s+(?:the\s+)?(?:field|industry)',
-            r'over\s+(\d+)\+?\s*years?'
+            r'(\d+)\s*\+?\s*years?\s+of\s+(?:[\w\s]{0,30})?experience',
+            r'(\d+)\s*\+?\s*years?\s+of\s+(?:[\w\s]{0,30})?expertise',
+            r'experience\s+of\s+(\d+)\s*\+?\s*years?',
+            r'(\d+)\s*\+?\s*years?\s+in\s+(?:the\s+)?(?:field|industry)',
+            r'over\s+(\d+)\s*\+?\s*years?',
         ]
-        
+
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 return float(match.group(1))
-        
+
         return None
     
     def _extract_description(self, text: str, start_pos: int, max_length: int = 500) -> str:

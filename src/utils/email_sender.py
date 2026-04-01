@@ -3,7 +3,10 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 from typing import Optional, Dict, List, Union
+import mimetypes
 import os
 import socket
 
@@ -289,6 +292,113 @@ This is an automated message. Please do not reply to this email.
             f"This is an automated notification."
         )
         return self._send(to_list, cc_list, subject, body, sender_email, sender_password)
+
+    def send_review_email(self,
+                         to_email: Union[str, List[str]],
+                         candidate_name: str,
+                         company_name: str,
+                         job_title: str,
+                         overall_score: float,
+                         sender_email: Optional[str] = None,
+                         sender_password: Optional[str] = None,
+                         cc_email: Optional[Union[str, List[str]]] = None,
+                         resume_bytes: Optional[bytes] = None,
+                         resume_filename: Optional[str] = None,
+                         match_summary: Optional[str] = None) -> Dict:
+        """Send a manual-review request to the hiring manager, with resume attached."""
+        if not sender_email:
+            sender_email = os.getenv('SENDER_EMAIL')
+        if not sender_password:
+            sender_password = os.getenv('SENDER_PASSWORD')
+        if not sender_email or not sender_password:
+            return {'success': False, 'message': 'Email credentials not configured.'}
+
+        if isinstance(to_email, str):
+            to_list = [a.strip() for a in to_email.split(',') if a.strip()]
+        else:
+            to_list = [a.strip() for a in to_email if a.strip()]
+        if isinstance(cc_email, str):
+            cc_list = [a.strip() for a in cc_email.split(',') if a.strip()]
+        elif cc_email:
+            cc_list = list(cc_email)
+        else:
+            cc_list = []
+
+        if not to_list:
+            return {'success': False, 'message': 'No valid recipient addresses.'}
+
+        subject = f"[Review Required] {candidate_name} \u2013 {job_title} at {company_name}"
+        attachment_note = (
+            f"The candidate's resume is attached for your reference."
+            if resume_bytes else
+            "Please access the candidate profile in the system for the full resume."
+        )
+        summary_section = f"\n\nMatch Summary:\n{match_summary}" if match_summary else ""
+        body = (
+            f"Dear Hiring Manager,\n\n"
+            f"A candidate profile for the {job_title} position at {company_name} has been "
+            f"flagged for manual review by the AI Screening System.\n\n"
+            f"Candidate   : {candidate_name}\n"
+            f"Role Applied: {job_title}\n"
+            f"Company     : {company_name}\n"
+            f"AI Match Score: {overall_score:.1f}%"
+            f"{summary_section}\n\n"
+            f"The candidate\u2019s overall score falls within the review range (60\u201375%), "
+            f"indicating a moderate fit that warrants human judgement before a final "
+            f"decision is made.\n\n"
+            f"{attachment_note}\n\n"
+            f"Please review the application and advise on the next steps at your earliest "
+            f"convenience.\n\n"
+            f"Best regards,\n"
+            f"AI Resume Screening System\n"
+            f"{company_name}\n\n"
+            f"---\n"
+            f"This is an automated notification. Please do not reply to this email."
+        )
+
+        message = MIMEMultipart()
+        message['From'] = sender_email
+        message['To'] = ', '.join(to_list)
+        if cc_list:
+            message['Cc'] = ', '.join(cc_list)
+        message['Subject'] = subject
+        message.attach(MIMEText(body, 'plain'))
+
+        if resume_bytes and resume_filename:
+            mime_type, _ = mimetypes.guess_type(resume_filename)
+            maintype, subtype = (mime_type or 'application/octet-stream').split('/', 1)
+            part = MIMEBase(maintype, subtype)
+            part.set_payload(resume_bytes)
+            encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment', filename=resume_filename)
+            message.attach(part)
+
+        try:
+            if self.use_ssl:
+                server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=self.timeout)
+            else:
+                server = smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=self.timeout)
+                server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(message, to_addrs=to_list + cc_list)
+            server.quit()
+            to_display = ', '.join(to_list)
+            cc_display = f' (CC: {", ".join(cc_list)})' if cc_list else ''
+            attach_note = ' (with resume attached)' if resume_bytes else ''
+            return {'success': True,
+                    'message': f'Review request sent to {to_display}{cc_display}{attach_note}'}
+        except socket.timeout:
+            return {'success': False,
+                    'message': f'Connection timeout reaching {self.smtp_server}:{self.smtp_port}.'}
+        except socket.error as e:
+            return {'success': False, 'message': f'Network error: {e}'}
+        except smtplib.SMTPAuthenticationError:
+            return {'success': False,
+                    'message': 'Authentication failed. For Gmail use an App Password.'}
+        except smtplib.SMTPException as e:
+            return {'success': False, 'message': f'SMTP error: {e}'}
+        except Exception as e:
+            return {'success': False, 'message': f'Error sending email: {e}'}
 
     # ------------------------------------------------------------------
     # Shared send helper

@@ -1,0 +1,72 @@
+AISHA BALOGUN
+aisha.balogun@devmail.com | +44-7700-900123
+
+PROFILE
+DevOps / Platform Engineer with 6 years of experience. Expert in Kubernetes, CI/CD, and cloud
+infrastructure automation. AWS Certified. Strong Python scripting background.
+
+TECHNOLOGY STACK & SKILLS
+
+Cloud Platforms:
+  Amazon Web Services (AWS): EC2, S3, RDS, Lambda, EKS, ECS, CloudFormation, IAM, Route53, SQS, SNS
+  Google Cloud Platform (GCP): GKE, Cloud Run, BigQuery (basic)
+  Microsoft Azure: AKS, Azure DevOps, Azure Functions (basic)
+
+Containerisation & Orchestration:
+  Docker, Kubernetes (K8s), Helm, Kustomize
+  Service Mesh: Istio, Linkerd (basic)
+
+Infrastructure as Code (IaC):
+  Terraform (expert), Ansible, Pulumi (learning), CloudFormation
+
+CI/CD Pipelines:
+  GitHub Actions, Jenkins, GitLab CI, CircleCI, ArgoCD, Flux CD
+
+Monitoring & Observability:
+  Prometheus, Grafana, ELK Stack (Elasticsearch, Logstash, Kibana), Datadog, PagerDuty
+
+Programming & Scripting:
+  Python (primary: boto3, fabric, pytest), Bash/Shell, Go (basic), YAML / HCL
+
+Databases & Messaging:
+  PostgreSQL, MySQL, MongoDB, Redis, Apache Kafka (consumer/producer, topics)
+
+Security:
+  HashiCorp Vault, AWS IAM, RBAC, network policies, SAST tooling (Snyk, SonarQube)
+
+WORK EXPERIENCE
+
+Senior Platform Engineer
+Fintech Enablers Ltd., London, UK
+March 2021 – Present
+- Designed and owns platform for 60+ microservices across 3 AWS regions
+- Reduced infrastructure costs 35% via right-sizing and Spot instance strategy
+- Built internal developer platform (IDP) using Backstage + GitOps (ArgoCD)
+
+Platform Engineer
+RetailCloud UK Ltd., Manchester, UK
+January 2019 – February 2021
+- Migrated on-prem workloads to AWS EKS; zero production incidents during cutover
+- Standardised CI/CD across 8 development teams using GitHub Actions + Helm
+
+Junior Systems Engineer
+MNO Telecom, Lagos, Nigeria
+August 2017 – December 2018
+- Maintained VMware virtualisation platform and Linux server estate
+- Automated routine tasks with Bash and Python scripts
+
+EDUCATION
+
+Bachelor of Engineering in Electrical/Electronics
+University of Ibadan, Nigeria
+Graduated: 2017
+
+CERTIFICATIONS
+- AWS Certified DevOps Engineer – Professional (2023)
+- Certified Kubernetes Administrator (CKA) (2022)
+- HashiCorp Certified: Terraform Associate (2022)
+- AWS Certified Solutions Architect – Associate (2020)
+
+OPEN SOURCE / COMMUNITY
+- Contributor to Terraform AWS provider (minor PRs merged)
+- Speaker, KubeCon EU 2023: "Self-Service Infrastructure with Backstage & GitOps"

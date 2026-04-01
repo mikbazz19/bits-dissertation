@@ -1,0 +1,310 @@
+ALEX LONGSWORTH
+alex.longsworth@bigmail.com | (555) 999-1234
+
+SUMMARY
+An intentionally very long resume used to stress-test the parser's handling of
+large documents. Contains repeated blocks of experience and skills sections.
+
+EXPERIENCE ENTRY 1
+Company 1, City, Country  (2011 – 2013)
+  - Worked extensively with Python, Java, or C++ on project iteration 1.
+  - Deployed services on AWS, GCP, or Azure environment 1.
+  - Managed team of 2 engineers. Improved velocity by 17%%.
+
+EXPERIENCE ENTRY 2
+Company 2, City, Country  (2012 – 2014)
+  - Worked extensively with Python, Java, or C++ on project iteration 2.
+  - Deployed services on AWS, GCP, or Azure environment 2.
+  - Managed team of 3 engineers. Improved velocity by 24%%.
+
+EXPERIENCE ENTRY 3
+Company 3, City, Country  (2013 – 2015)
+  - Worked extensively with Python, Java, or C++ on project iteration 3.
+  - Deployed services on AWS, GCP, or Azure environment 3.
+  - Managed team of 4 engineers. Improved velocity by 31%%.
+
+EXPERIENCE ENTRY 4
+Company 4, City, Country  (2014 – 2016)
+  - Worked extensively with Python, Java, or C++ on project iteration 4.
+  - Deployed services on AWS, GCP, or Azure environment 4.
+  - Managed team of 5 engineers. Improved velocity by 38%%.
+
+EXPERIENCE ENTRY 5
+Company 5, City, Country  (2015 – 2017)
+  - Worked extensively with Python, Java, or C++ on project iteration 5.
+  - Deployed services on AWS, GCP, or Azure environment 5.
+  - Managed team of 6 engineers. Improved velocity by 45%%.
+
+EXPERIENCE ENTRY 6
+Company 6, City, Country  (2016 – 2018)
+  - Worked extensively with Python, Java, or C++ on project iteration 6.
+  - Deployed services on AWS, GCP, or Azure environment 6.
+  - Managed team of 7 engineers. Improved velocity by 52%%.
+
+EXPERIENCE ENTRY 7
+Company 7, City, Country  (2017 – 2019)
+  - Worked extensively with Python, Java, or C++ on project iteration 7.
+  - Deployed services on AWS, GCP, or Azure environment 7.
+  - Managed team of 8 engineers. Improved velocity by 59%%.
+
+EXPERIENCE ENTRY 8
+Company 8, City, Country  (2018 – 2010)
+  - Worked extensively with Python, Java, or C++ on project iteration 8.
+  - Deployed services on AWS, GCP, or Azure environment 8.
+  - Managed team of 9 engineers. Improved velocity by 16%%.
+
+EXPERIENCE ENTRY 9
+Company 9, City, Country  (2019 – 2011)
+  - Worked extensively with Python, Java, or C++ on project iteration 9.
+  - Deployed services on AWS, GCP, or Azure environment 9.
+  - Managed team of 10 engineers. Improved velocity by 23%%.
+
+EXPERIENCE ENTRY 10
+Company 10, City, Country  (2010 – 2012)
+  - Worked extensively with Python, Java, or C++ on project iteration 10.
+  - Deployed services on AWS, GCP, or Azure environment 10.
+  - Managed team of 11 engineers. Improved velocity by 30%%.
+
+EXPERIENCE ENTRY 11
+Company 11, City, Country  (2011 – 2013)
+  - Worked extensively with Python, Java, or C++ on project iteration 11.
+  - Deployed services on AWS, GCP, or Azure environment 11.
+  - Managed team of 12 engineers. Improved velocity by 37%%.
+
+EXPERIENCE ENTRY 12
+Company 12, City, Country  (2012 – 2014)
+  - Worked extensively with Python, Java, or C++ on project iteration 12.
+  - Deployed services on AWS, GCP, or Azure environment 12.
+  - Managed team of 13 engineers. Improved velocity by 44%%.
+
+EXPERIENCE ENTRY 13
+Company 13, City, Country  (2013 – 2015)
+  - Worked extensively with Python, Java, or C++ on project iteration 13.
+  - Deployed services on AWS, GCP, or Azure environment 13.
+  - Managed team of 14 engineers. Improved velocity by 51%%.
+
+EXPERIENCE ENTRY 14
+Company 14, City, Country  (2014 – 2016)
+  - Worked extensively with Python, Java, or C++ on project iteration 14.
+  - Deployed services on AWS, GCP, or Azure environment 14.
+  - Managed team of 15 engineers. Improved velocity by 58%%.
+
+EXPERIENCE ENTRY 15
+Company 15, City, Country  (2015 – 2017)
+  - Worked extensively with Python, Java, or C++ on project iteration 15.
+  - Deployed services on AWS, GCP, or Azure environment 15.
+  - Managed team of 16 engineers. Improved velocity by 15%%.
+
+EXPERIENCE ENTRY 16
+Company 16, City, Country  (2016 – 2018)
+  - Worked extensively with Python, Java, or C++ on project iteration 16.
+  - Deployed services on AWS, GCP, or Azure environment 16.
+  - Managed team of 17 engineers. Improved velocity by 22%%.
+
+EXPERIENCE ENTRY 17
+Company 17, City, Country  (2017 – 2019)
+  - Worked extensively with Python, Java, or C++ on project iteration 17.
+  - Deployed services on AWS, GCP, or Azure environment 17.
+  - Managed team of 18 engineers. Improved velocity by 29%%.
+
+EXPERIENCE ENTRY 18
+Company 18, City, Country  (2018 – 2010)
+  - Worked extensively with Python, Java, or C++ on project iteration 18.
+  - Deployed services on AWS, GCP, or Azure environment 18.
+  - Managed team of 19 engineers. Improved velocity by 36%%.
+
+EXPERIENCE ENTRY 19
+Company 19, City, Country  (2019 – 2011)
+  - Worked extensively with Python, Java, or C++ on project iteration 19.
+  - Deployed services on AWS, GCP, or Azure environment 19.
+  - Managed team of 20 engineers. Improved velocity by 43%%.
+
+EXPERIENCE ENTRY 20
+Company 20, City, Country  (2010 – 2012)
+  - Worked extensively with Python, Java, or C++ on project iteration 20.
+  - Deployed services on AWS, GCP, or Azure environment 20.
+  - Managed team of 21 engineers. Improved velocity by 50%%.
+
+EXPERIENCE ENTRY 21
+Company 21, City, Country  (2011 – 2013)
+  - Worked extensively with Python, Java, or C++ on project iteration 21.
+  - Deployed services on AWS, GCP, or Azure environment 21.
+  - Managed team of 22 engineers. Improved velocity by 57%%.
+
+EXPERIENCE ENTRY 22
+Company 22, City, Country  (2012 – 2014)
+  - Worked extensively with Python, Java, or C++ on project iteration 22.
+  - Deployed services on AWS, GCP, or Azure environment 22.
+  - Managed team of 23 engineers. Improved velocity by 14%%.
+
+EXPERIENCE ENTRY 23
+Company 23, City, Country  (2013 – 2015)
+  - Worked extensively with Python, Java, or C++ on project iteration 23.
+  - Deployed services on AWS, GCP, or Azure environment 23.
+  - Managed team of 24 engineers. Improved velocity by 21%%.
+
+EXPERIENCE ENTRY 24
+Company 24, City, Country  (2014 – 2016)
+  - Worked extensively with Python, Java, or C++ on project iteration 24.
+  - Deployed services on AWS, GCP, or Azure environment 24.
+  - Managed team of 25 engineers. Improved velocity by 28%%.
+
+EXPERIENCE ENTRY 25
+Company 25, City, Country  (2015 – 2017)
+  - Worked extensively with Python, Java, or C++ on project iteration 25.
+  - Deployed services on AWS, GCP, or Azure environment 25.
+  - Managed team of 26 engineers. Improved velocity by 35%%.
+
+EXPERIENCE ENTRY 26
+Company 26, City, Country  (2016 – 2018)
+  - Worked extensively with Python, Java, or C++ on project iteration 26.
+  - Deployed services on AWS, GCP, or Azure environment 26.
+  - Managed team of 27 engineers. Improved velocity by 42%%.
+
+EXPERIENCE ENTRY 27
+Company 27, City, Country  (2017 – 2019)
+  - Worked extensively with Python, Java, or C++ on project iteration 27.
+  - Deployed services on AWS, GCP, or Azure environment 27.
+  - Managed team of 28 engineers. Improved velocity by 49%%.
+
+EXPERIENCE ENTRY 28
+Company 28, City, Country  (2018 – 2010)
+  - Worked extensively with Python, Java, or C++ on project iteration 28.
+  - Deployed services on AWS, GCP, or Azure environment 28.
+  - Managed team of 29 engineers. Improved velocity by 56%%.
+
+EXPERIENCE ENTRY 29
+Company 29, City, Country  (2019 – 2011)
+  - Worked extensively with Python, Java, or C++ on project iteration 29.
+  - Deployed services on AWS, GCP, or Azure environment 29.
+  - Managed team of 30 engineers. Improved velocity by 13%%.
+
+EXPERIENCE ENTRY 30
+Company 30, City, Country  (2010 – 2012)
+  - Worked extensively with Python, Java, or C++ on project iteration 30.
+  - Deployed services on AWS, GCP, or Azure environment 30.
+  - Managed team of 31 engineers. Improved velocity by 20%%.
+
+EXPERIENCE ENTRY 31
+Company 31, City, Country  (2011 – 2013)
+  - Worked extensively with Python, Java, or C++ on project iteration 31.
+  - Deployed services on AWS, GCP, or Azure environment 31.
+  - Managed team of 32 engineers. Improved velocity by 27%%.
+
+EXPERIENCE ENTRY 32
+Company 32, City, Country  (2012 – 2014)
+  - Worked extensively with Python, Java, or C++ on project iteration 32.
+  - Deployed services on AWS, GCP, or Azure environment 32.
+  - Managed team of 33 engineers. Improved velocity by 34%%.
+
+EXPERIENCE ENTRY 33
+Company 33, City, Country  (2013 – 2015)
+  - Worked extensively with Python, Java, or C++ on project iteration 33.
+  - Deployed services on AWS, GCP, or Azure environment 33.
+  - Managed team of 34 engineers. Improved velocity by 41%%.
+
+EXPERIENCE ENTRY 34
+Company 34, City, Country  (2014 – 2016)
+  - Worked extensively with Python, Java, or C++ on project iteration 34.
+  - Deployed services on AWS, GCP, or Azure environment 34.
+  - Managed team of 35 engineers. Improved velocity by 48%%.
+
+EXPERIENCE ENTRY 35
+Company 35, City, Country  (2015 – 2017)
+  - Worked extensively with Python, Java, or C++ on project iteration 35.
+  - Deployed services on AWS, GCP, or Azure environment 35.
+  - Managed team of 36 engineers. Improved velocity by 55%%.
+
+EXPERIENCE ENTRY 36
+Company 36, City, Country  (2016 – 2018)
+  - Worked extensively with Python, Java, or C++ on project iteration 36.
+  - Deployed services on AWS, GCP, or Azure environment 36.
+  - Managed team of 37 engineers. Improved velocity by 12%%.
+
+EXPERIENCE ENTRY 37
+Company 37, City, Country  (2017 – 2019)
+  - Worked extensively with Python, Java, or C++ on project iteration 37.
+  - Deployed services on AWS, GCP, or Azure environment 37.
+  - Managed team of 38 engineers. Improved velocity by 19%%.
+
+EXPERIENCE ENTRY 38
+Company 38, City, Country  (2018 – 2010)
+  - Worked extensively with Python, Java, or C++ on project iteration 38.
+  - Deployed services on AWS, GCP, or Azure environment 38.
+  - Managed team of 39 engineers. Improved velocity by 26%%.
+
+EXPERIENCE ENTRY 39
+Company 39, City, Country  (2019 – 2011)
+  - Worked extensively with Python, Java, or C++ on project iteration 39.
+  - Deployed services on AWS, GCP, or Azure environment 39.
+  - Managed team of 40 engineers. Improved velocity by 33%%.
+
+EXPERIENCE ENTRY 40
+Company 40, City, Country  (2010 – 2012)
+  - Worked extensively with Python, Java, or C++ on project iteration 40.
+  - Deployed services on AWS, GCP, or Azure environment 40.
+  - Managed team of 41 engineers. Improved velocity by 40%%.
+
+EXPERIENCE ENTRY 41
+Company 41, City, Country  (2011 – 2013)
+  - Worked extensively with Python, Java, or C++ on project iteration 41.
+  - Deployed services on AWS, GCP, or Azure environment 41.
+  - Managed team of 42 engineers. Improved velocity by 47%%.
+
+EXPERIENCE ENTRY 42
+Company 42, City, Country  (2012 – 2014)
+  - Worked extensively with Python, Java, or C++ on project iteration 42.
+  - Deployed services on AWS, GCP, or Azure environment 42.
+  - Managed team of 43 engineers. Improved velocity by 54%%.
+
+EXPERIENCE ENTRY 43
+Company 43, City, Country  (2013 – 2015)
+  - Worked extensively with Python, Java, or C++ on project iteration 43.
+  - Deployed services on AWS, GCP, or Azure environment 43.
+  - Managed team of 44 engineers. Improved velocity by 11%%.
+
+EXPERIENCE ENTRY 44
+Company 44, City, Country  (2014 – 2016)
+  - Worked extensively with Python, Java, or C++ on project iteration 44.
+  - Deployed services on AWS, GCP, or Azure environment 44.
+  - Managed team of 45 engineers. Improved velocity by 18%%.
+
+EXPERIENCE ENTRY 45
+Company 45, City, Country  (2015 – 2017)
+  - Worked extensively with Python, Java, or C++ on project iteration 45.
+  - Deployed services on AWS, GCP, or Azure environment 45.
+  - Managed team of 46 engineers. Improved velocity by 25%%.
+
+EXPERIENCE ENTRY 46
+Company 46, City, Country  (2016 – 2018)
+  - Worked extensively with Python, Java, or C++ on project iteration 46.
+  - Deployed services on AWS, GCP, or Azure environment 46.
+  - Managed team of 47 engineers. Improved velocity by 32%%.
+
+EXPERIENCE ENTRY 47
+Company 47, City, Country  (2017 – 2019)
+  - Worked extensively with Python, Java, or C++ on project iteration 47.
+  - Deployed services on AWS, GCP, or Azure environment 47.
+  - Managed team of 48 engineers. Improved velocity by 39%%.
+
+EXPERIENCE ENTRY 48
+Company 48, City, Country  (2018 – 2010)
+  - Worked extensively with Python, Java, or C++ on project iteration 48.
+  - Deployed services on AWS, GCP, or Azure environment 48.
+  - Managed team of 49 engineers. Improved velocity by 46%%.
+
+EXPERIENCE ENTRY 49
+Company 49, City, Country  (2019 – 2011)
+  - Worked extensively with Python, Java, or C++ on project iteration 49.
+  - Deployed services on AWS, GCP, or Azure environment 49.
+  - Managed team of 50 engineers. Improved velocity by 53%%.
+
+EXPERIENCE ENTRY 50
+Company 50, City, Country  (2010 – 2012)
+  - Worked extensively with Python, Java, or C++ on project iteration 50.
+  - Deployed services on AWS, GCP, or Azure environment 50.
+  - Managed team of 51 engineers. Improved velocity by 10%.
+
+EDUCATION
+B.Sc. Computer Science — Test University (2010)
+M.Sc. Software Engineering — Test University (2012)

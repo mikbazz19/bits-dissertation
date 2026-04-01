@@ -1,0 +1,48 @@
+DevOps / Platform Engineer
+CloudNative Corp | London, UK (Remote-first)
+
+ROLE OVERVIEW
+We are looking for a DevOps or Platform Engineer to join our infrastructure team. You will own
+the reliability, scalability, and developer experience of our cloud-native platform.
+
+RESPONSIBILITIES
+- Build and maintain CI/CD pipelines (GitHub Actions, ArgoCD, Flux)
+- Manage Kubernetes clusters on AWS EKS and GCP GKE
+- Write Infrastructure as Code using Terraform and Helm charts
+- Implement monitoring, alerting, and SLO/SLA tracking
+- Improve developer experience through internal tools and documentation
+- Own incident response and participate in on-call rotation
+- Collaborate with application teams to implement GitOps best practices
+
+REQUIRED QUALIFICATIONS
+- 4+ years in a DevOps, SRE, or Platform Engineering role
+- Expert-level Kubernetes knowledge (workloads, RBAC, networking, storage)
+- Terraform proficiency (modules, state management, remote backends)
+- Strong scripting in Python or Bash
+- Hands-on AWS experience (EKS, EC2, S3, IAM, VPC, RDS, CloudWatch)
+- CI/CD pipeline design and implementation
+- Container orchestration: Docker and Kubernetes
+- Git-based workflows and GitOps principles
+
+REQUIRED TECHNICAL SKILLS
+- Infrastructure as Code: Terraform (primary), Ansible (secondary)
+- Kubernetes & containers: Docker, Helm, Kustomize, ArgoCD
+- Cloud: AWS (primary), GCP (secondary)
+- CI/CD: GitHub Actions, Jenkins
+- Monitoring: Prometheus, Grafana, ELK Stack or Datadog
+- Programming/Scripting: Python, Bash
+- Networking: VPC, subnets, security groups, load balancers, DNS
+
+PREFERRED QUALIFICATIONS
+- Experience with service mesh (Istio, Linkerd)
+- Knowledge of HashiCorp Vault for secrets management
+- AWS Certified DevOps Engineer or CKA/CKAD certification
+- Experience building Internal Developer Platforms (IDP) with Backstage
+- FinOps awareness (cloud cost optimisation)
+- Experience with multi-cloud or hybrid cloud architectures
+
+COMPENSATION
+- £65,000 – £90,000 per year depending on experience
+- Remote-first with travel to London office ~4x/year
+- Share options via EMI scheme
+- Private health insurance, 25 days annual leave + bank holidays

@@ -1,0 +1,54 @@
+Junior Software Developer (0-1 Year Experience / Fresh Graduate)
+TechStart Solutions | Bangalore, India (Hybrid)
+
+ABOUT US
+TechStart Solutions is a product startup building SaaS tools for SMEs. We believe in growing talent
+from the ground up. This role is ideal for fresh graduates or candidates with up to 1 year of experience.
+
+ROLE SUMMARY
+We are looking for a motivated Junior Software Developer who is eager to learn, takes initiative,
+and wants to grow fast in a startup environment. You will be closely mentored by senior engineers.
+
+RESPONSIBILITIES
+- Develop and maintain features for our web application under the guidance of senior developers
+- Write clean, readable code with appropriate unit tests
+- Participate in daily standups, sprint planning, and retrospectives
+- Learn and contribute to code reviews
+- Document your work and update technical wikis
+- Help triage and fix bugs reported by users
+
+MINIMUM REQUIREMENTS
+- Bachelor's degree (or equivalent) in Computer Science, Information Technology, or related field
+- Freshers welcome — 0 to 1 year of professional or internship experience
+- Basic proficiency in at least ONE backend language: Python, Java, or Node.js
+- Fundamental understanding of HTML, CSS, and JavaScript
+- Familiarity with SQL (simple SELECT queries, basic table design)
+- Understanding of version control with Git (commit, push, pull request)
+- Ability to read and understand existing code
+- Growth mindset and willingness to ask questions
+
+GOOD TO HAVE (NOT REQUIRED)
+- Any academic or personal project on GitHub
+- Basic exposure to REST APIs (consuming or building)
+- Familiarity with any cloud platform (AWS free tier, GCP free tier)
+- Any internship experience in software development
+- Problem-solving track record (LeetCode, HackerRank, Codechef etc.)
+
+TRAINING & ONBOARDING
+All selected candidates go through a 30-day structured onboarding programme covering:
+- Company tech stack deep-dive
+- Code standards and practices
+- Pair programming sessions with a buddy engineer
+
+EDUCATION REQUIREMENTS
+- BE / B.Tech / BSc / BCA in Computer Science, IT, or related — 2023 or 2024 batch preferred
+- 60% or above in degree (or CGPA 6.0+)
+
+COMPENSATION & BENEFITS
+- CTC: ₹4.0 – ₹6.5 LPA (based on assessment)
+- Stock options after probation
+- Sponsored online learning (Udemy, Coursera)
+- Flexible work-from-home Fridays
+- Health insurance (self + family)
+
+TechStart Solutions is an equal-opportunity employer.

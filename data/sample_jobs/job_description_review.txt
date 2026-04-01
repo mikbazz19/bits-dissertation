@@ -1,0 +1,36 @@
+Machine Learning Engineer
+NeuralBridge Analytics | Remote
+
+POSITION SUMMARY
+NeuralBridge Analytics is seeking a Machine Learning Engineer to build and deploy
+production ML systems. You will design training pipelines, implement deep learning
+architectures, and scale models to production environments.
+
+RESPONSIBILITIES
+- Design, build, and deploy machine learning models into production
+- Implement and optimize deep learning architectures for real-world datasets
+- Build distributed training pipelines using Spark on large-scale data
+- Deploy and orchestrate containerized workloads using Kubernetes
+- Collaborate with product and analytics teams on model delivery timelines
+- Monitor and retrain deployed models as data distributions shift
+
+REQUIRED SKILLS
+- Machine Learning
+- Deep Learning
+- PyTorch
+- Kubernetes
+
+PREFERRED SKILLS
+- Python
+- Scikit-learn
+- Spark
+- TensorFlow
+
+REQUIREMENTS
+- 3+ years of experience in machine learning engineering
+- Solid understanding of model training, evaluation, and deployment pipelines
+- Hands-on experience with distributed computing frameworks
+- Ability to work independently in a fully remote setup
+
+EDUCATION
+Bachelor's degree in Computer Science, Engineering, or a related field required.

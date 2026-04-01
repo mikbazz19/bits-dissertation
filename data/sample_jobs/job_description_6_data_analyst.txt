@@ -1,0 +1,45 @@
+Data Analyst / Business Intelligence Developer
+RetailMax Group | Remote (India)
+
+ABOUT THE ROLE
+We are looking for a talented individual who can bridge the gap between raw business data and
+actionable insights. This hybrid role covers both advanced SQL analytics and dashboard development.
+
+WHAT YOU WILL DO
+- Query and analyse large datasets to support business decision-making
+- Build and maintain dashboards in Tableau and Power BI
+- Work with the data engineering team to understand data models and pipelines
+- Translate business questions into SQL queries and present findings to stakeholders
+- Identify data quality issues and propose remediation
+- Conduct ad-hoc analysis for marketing, sales, and operations teams
+- Collaborate with product teams to define and track KPIs
+
+WHO YOU ARE
+You have a strong SQL background and an eye for data quality. You are comfortable building charts
+and dashboards. You communicate well in writing and verbally. You ask "why" before diving in.
+
+WE EXPECT
+- Advanced SQL (window functions, CTEs, complex joins, optimisation)
+- Experience with at least one BI tool (Tableau preferred, Power BI acceptable)
+- Python or R for data wrangling and statistical analysis
+- Familiarity with a cloud data warehouse: Snowflake, BigQuery, or Redshift
+- Experience presenting data findings to non-technical stakeholders
+- Attention to detail and strong data quality instincts
+- 2–5 years of relevant analytics or BI experience
+
+NICE TO HAVE
+- Experience with dbt (data build tool) for data transformation
+- Exposure to Looker or similar modern BI platforms
+- Basic knowledge of machine learning concepts (regression, clustering)
+- Experience in retail, e-commerce, or consumer goods domain
+- Excel expertise (PivotTables, VLOOKUP, advanced formulas)
+
+EDUCATION
+- Bachelor's degree in Statistics, Mathematics, Economics, Computer Science, or related field
+- Master's degree appreciated but not required
+
+COMPENSATION
+- ₹8 – 15 LPA depending on experience
+- Annual performance bonus up to 15%
+- Fully remote with quarterly team meet-ups in Mumbai
+- Learning budget ₹25,000 per year

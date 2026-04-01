@@ -1,0 +1,38 @@
+POSITION: Senior Backend Engineer
+COMPANY: NexLayer Technologies
+LOCATION: Chicago, IL (Hybrid)
+
+ABOUT THE ROLE
+NexLayer Technologies is looking for a Senior Backend Engineer to join our Platform team.
+You will design, build, and maintain scalable web APIs and backend services that power our
+SaaS platform used by over 500,000 end users.
+
+RESPONSIBILITIES
+- Design and develop RESTful APIs using Python (Django / FastAPI / Flask)
+- Lead a small team of 2–4 engineers on feature delivery
+- Collaborate with frontend teams on API contracts and integration
+- Review code, mentor junior engineers, and drive best practices
+- Improve system reliability, observability, and performance
+- Participate in on-call rotation for production issues
+
+REQUIREMENTS
+- 6+ years of backend software development experience
+- Strong proficiency in Python; experience with Django, FastAPI, or Flask
+- Solid understanding of REST API design and HTTP fundamentals
+- Experience with JavaScript / Node.js is a plus
+- Experience with React or Vue for occasional full-stack work is a bonus
+- Familiarity with relational databases (PostgreSQL, MySQL)
+- Experience with cloud platforms (AWS, GCP, or Azure)
+- Strong communication skills and ability to work independently
+- Computer Science degree or equivalent practical experience
+
+PREFERRED
+- Experience leading or mentoring a small engineering team
+- Exposure to microservices architecture
+- Familiarity with Docker and container-based deployments
+
+WHAT WE OFFER
+- Competitive salary ($130,000 – $160,000)
+- Health, dental, and vision insurance
+- Remote-friendly culture with flexible hours
+- Annual learning & development budget

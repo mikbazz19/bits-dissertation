@@ -50,6 +50,10 @@ def initialize_session_state():
         st.session_state.smtp_port = 587
     if 'use_ssl' not in st.session_state:
         st.session_state.use_ssl = False
+    if 'resume_file_bytes' not in st.session_state:
+        st.session_state.resume_file_bytes = None
+    if 'resume_file_name' not in st.session_state:
+        st.session_state.resume_file_name = None
 
 
 def _detect_document_type(text: str) -> str:
@@ -65,12 +69,15 @@ def _detect_document_type(text: str) -> str:
     jd_signals = [
         r'job\s+description', r'job\s+posting', r'job\s+title', r'about\s+the\s+role',
         r'about\s+this\s+role',
-        r"we'?re?\s+(?:looking|seeking|hiring)",          # "we are" AND "we're"
+        r"we(?:\s+are|'re)\s+(?:looking|seeking|hiring)",  # "we are looking" + "we're looking"
         r'you\s+will\s+be\s+responsible', r'key\s+responsibilities',
-        r'responsibilities', r'requirements', r'qualifications',  # no colon needed
+        r'responsibilities', r'requirements', r'qualifications',
         r"what\s+you'?ll\s+(?:do|work|build)", r"what\s+we'?re\s+looking\s+for",
         r'the\s+ideal\s+candidate', r'required\s+qualifications?',
-        r'preferred\s+qualifications?', r'minimum\s+(?:experience|qualifications?)',
+        r'preferred\s+qualifications?',
+        r'required\s+skills?', r'preferred\s+skills?',   # "REQUIRED SKILLS / PREFERRED SKILLS"
+        r'minimum\s+\d',                                 # "Minimum 3 years..."
+        r'minimum\s+(?:experience|qualifications?)',
         r'equal\s+opportunity\s+employer', r'salary\s+range', r'compensation',
         r'benefits\s+include', r'apply\s+now', r'apply\s+today',
         r'we\s+offer', r'what\s+you\s+bring', r'nice\s+to\s+have',
@@ -79,8 +86,11 @@ def _detect_document_type(text: str) -> str:
         r'curriculum\s+vitae', r'professional\s+summary', r'career\s+objective',
         r'work\s+history', r'references\s+available', r'objective:',
         r'summary:', r'certifications?:', r'education:',
+        # Month + year range:  "March 2021 - Present"
         r'\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{4}\s*[-\u2013]\s*(?:present|current|\d{4})',
-        r'[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}',  # email address
+        # Year-only range: "2020 – Present" / "2018 – 2020"  (common in PDFs/DOCX)
+        r'\b\d{4}\s*[-\u2013\u2014]\s*(?:present|current|\d{4})\b',
+        r'[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}',   # email address
     ]
 
     jd_score = sum(1 for p in jd_signals if re.search(p, lower))
@@ -313,12 +323,19 @@ def main():
                     type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp']
                 )
 
+                # Clear parsed data when user removes the file
+                if uploaded_file is None and st.session_state.resume_parsed:
+                    st.session_state.resume_parsed = False
+                    st.session_state.pop('resume', None)
+
                 if uploaded_file:
                     _ext = Path(uploaded_file.name).suffix.lower()
                     if _ext in {'.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.webp'}:
                         st.info("🖼️ Image file detected — OCR will extract text automatically.")
                 
                 if uploaded_file and st.button("Parse Resume"):
+                    st.session_state.resume_file_bytes = uploaded_file.getvalue()
+                    st.session_state.resume_file_name = uploaded_file.name
                     with st.spinner("Parsing resume..."):
                         resume, error = parse_resume(uploaded_file, is_file=True)
                         
@@ -330,8 +347,15 @@ def main():
                             st.success("✅ Resume parsed successfully!")
             else:
                 resume_text = st.text_area("Paste Resume Text:", height=300)
+
+                # Clear parsed data when user clears the text area
+                if not resume_text and st.session_state.resume_parsed:
+                    st.session_state.resume_parsed = False
+                    st.session_state.pop('resume', None)
                 
                 if resume_text and st.button("Parse Resume"):
+                    st.session_state.resume_file_bytes = None
+                    st.session_state.resume_file_name = None
                     with st.spinner("Parsing resume..."):
                         resume, error = parse_resume(resume_text, is_file=False)
                         
@@ -473,8 +497,33 @@ def main():
                         
                         # Display results
                         st.metric("Overall Match Score", f"{match_result['overall_score']}%")
+
+                        _dec = match_result.get('decision', '')
+                        _reason = match_result.get('decision_reason', '')
+                        if _dec == "Accept":
+                            st.success(f"✅ **Decision: ACCEPT** — {_reason}")
+                        elif _dec == "Review":
+                            st.warning(f"🔍 **Decision: REVIEW** — {_reason}")
+                        else:
+                            st.error(f"❌ **Decision: REJECT** — {_reason}")
+
+                        hfr = match_result.get('hard_filter_results', {})
+                        if hfr:
+                            st.write("**Eligibility Check:**")
+                            overqualified = not hfr.get('overqualification', {}).get('passed', True)
+                            for key, fv in hfr.items():
+                                if key == 'experience' and overqualified:
+                                    # Suppress the "✅ Minimum Experience" pass when overqualification fails
+                                    continue
+                                icon = "✅" if fv['passed'] else "❌"
+                                st.write(f"\u00a0\u00a0{icon} {fv['label']}: {fv['detail']}")
+
+                        cf = match_result.get('confidence_factor', 1.0)
+                        if cf < 1.0:
+                            st.caption(f"ℹ️ Confidence factor applied: {cf} (sparse resume data detected)")
+
                         st.write(f"**Match Level:** {match_result['match_level']}")
-                        
+
                         col_a, col_b, col_c = st.columns(3)
                         with col_a:
                             st.metric("Skills", f"{match_result['skill_score']}%")
@@ -539,7 +588,12 @@ def main():
                     else:
                         st.write(f"- Candidate: {total} years")
 
-                    if exp_gaps['meets_requirement']:
+                    # Check overqualification from match result
+                    _hfr = st.session_state.get('match_result', {}).get('hard_filter_results', {})
+                    _overqualified = not _hfr.get('overqualification', {}).get('passed', True)
+                    if _overqualified:
+                        st.warning(f"⚠️ Overqualified: {_hfr['overqualification']['detail']}")
+                    elif exp_gaps['meets_requirement']:
                         st.success("✅ Meets experience requirement")
                     else:
                         st.warning(f"⚠️ Gap: {exp_gaps['experience_gap_years']} years")
@@ -605,107 +659,202 @@ def main():
                 gap_analysis = st.session_state.gap_analysis
                 match_result = st.session_state.get('match_result', {})
 
-                # ── Shortlist / Rejection decision ──────────────────────────
+                # ── Decision ─────────────────────────────────────────────────
                 overall_score = match_result.get('overall_score', 0)
-                SHORTLIST_THRESHOLD = 70  # % — adjust as needed
+                decision = match_result.get('decision', 'Reject')
+                hard_filter_results = match_result.get('hard_filter_results', {})
+                confidence_factor = match_result.get('confidence_factor', 1.0)
 
-                is_shortlisted = overall_score >= SHORTLIST_THRESHOLD
+                # Hard filter summary
+                if hard_filter_results:
+                    st.subheader("� Eligibility Check")
+                    for fv in hard_filter_results.values():
+                        icon = "✅" if fv['passed'] else "❌"
+                        st.write(f"{icon} **{fv['label']}**: {fv['detail']}")
+                    if confidence_factor < 1.0:
+                        st.caption(
+                            f"ℹ️ Confidence factor applied: {confidence_factor} "
+                            f"(sparse resume data reduced the raw score)"
+                        )
 
-                if is_shortlisted:
-                    st.subheader("🎉 Shortlisting Decision")
+                if decision == "Accept":
+                    st.subheader("🎉 Decision")
                     st.success(
-                        f"✅ **Shortlisted** — Overall match score {overall_score}% "
-                        f"meets the threshold ({SHORTLIST_THRESHOLD}%). "
+                        f"✅ **ACCEPT** — Score {overall_score}% ≥ 75%.  "
                         f"Candidate is recommended for interview."
                     )
-                    email_section_label = "📧 Send Interview Invitation"
-                    email_btn_label = "📤 Send Shortlist Email"
-                else:
-                    st.subheader("📋 Shortlisting Decision")
+                elif decision == "Review":
+                    st.subheader("🔍 Decision")
                     st.warning(
-                        f"❌ **Not Shortlisted** — Overall match score {overall_score}% "
-                        f"is below the threshold ({SHORTLIST_THRESHOLD}%). "
-                        f"A rejection email with Gap Analysis will be sent."
+                        f"🔍 **REVIEW** — Score {overall_score}% is in the review range (60–75%).  "
+                        f"Manual review by hiring manager is recommended."
                     )
-                    email_section_label = "📧 Send Rejection Email with Gap Report"
-                    email_btn_label = "📤 Send Rejection Email"
-
-                # ── Email inputs ─────────────────────────────────────────────
-                st.subheader(email_section_label)
-                default_email = resume.email or ""
-
-                col_email, col_btn = st.columns([3, 1])
-                with col_email:
-                    recipient_email = st.text_input(
-                        "Recipient Email (To):",
-                        value=default_email,
-                        placeholder="candidate@example.com",
-                        key="notify_to",
-                        help="One or more addresses separated by commas"
-                    )
-                    cc_email_input = st.text_input(
-                        "CC (optional):",
-                        value="",
-                        placeholder="hr@example.com",
-                        key="notify_cc",
-                        help="One or more CC addresses separated by commas"
+                else:
+                    reason = match_result.get('decision_reason', '')
+                    st.subheader("📋 Decision")
+                    st.error(
+                        f"❌ **REJECT** — {reason or f'Score {overall_score}% is below 60%.'}"
                     )
 
-                with col_btn:
-                    st.write("")
-                    st.write("")
-                    send_email_btn = st.button(email_btn_label, type="secondary")
+                # ── Email section ──────────────────────────────────────────────
+                if decision in ("Accept", "Reject"):
+                    # Accept → shortlist email to candidate
+                    # Reject → rejection + gap report email to candidate
+                    email_label = (
+                        "📧 Send Interview Invitation"
+                        if decision == "Accept" else
+                        "📧 Send Rejection Email with Gap Report"
+                    )
+                    btn_label = (
+                        "📤 Send Shortlist Email"
+                        if decision == "Accept" else
+                        "📤 Send Rejection Email"
+                    )
+                    st.subheader(email_label)
+                    default_email = resume.email or ""
+                    col_email, col_btn = st.columns([3, 1])
+                    with col_email:
+                        recipient_email = st.text_input(
+                            "Recipient Email (To):",
+                            value=default_email,
+                            placeholder="candidate@example.com",
+                            key="notify_to",
+                            help="One or more addresses separated by commas"
+                        )
+                        cc_email_input = st.text_input(
+                            "CC (optional):",
+                            value="",
+                            placeholder="hr@example.com",
+                            key="notify_cc",
+                            help="One or more CC addresses separated by commas"
+                        )
+                    with col_btn:
+                        st.write("")
+                        st.write("")
+                        send_email_btn = st.button(btn_label, type="secondary")
 
-                if send_email_btn:
-                    if not recipient_email.strip():
-                        st.error("Please enter at least one recipient email address.")
-                    elif not st.session_state.sender_email or not st.session_state.sender_password:
-                        st.error("⚠️ Please configure email settings in the sidebar first.")
+                    if send_email_btn:
+                        if not recipient_email.strip():
+                            st.error("Please enter at least one recipient email address.")
+                        elif not st.session_state.sender_email or not st.session_state.sender_password:
+                            st.error("⚠️ Please configure email settings in the sidebar first.")
+                        else:
+                            to_list = [e.strip() for e in recipient_email.split(',') if e.strip()]
+                            cc_list = [e.strip() for e in cc_email_input.split(',') if e.strip()]
+                            with st.spinner(f"Sending email to {', '.join(to_list)}..."):
+                                try:
+                                    email_sender = EmailSender(
+                                        smtp_port=st.session_state.smtp_port,
+                                        use_ssl=st.session_state.use_ssl,
+                                        timeout=30
+                                    )
+                                    creds = dict(
+                                        sender_email=st.session_state.sender_email,
+                                        sender_password=st.session_state.sender_password,
+                                        cc_email=cc_list or None
+                                    )
+                                    if decision == "Accept":
+                                        result = email_sender.send_shortlist_email(
+                                            to_email=to_list,
+                                            candidate_name=resume.name or "Candidate",
+                                            company_name=job.company or "Our Company",
+                                            job_title=job.title or "the applied position",
+                                            **creds
+                                        )
+                                    else:
+                                        report_gen = ReportGenerator()
+                                        gap_report_text = report_gen.generate_gap_report(gap_analysis)
+                                        result = email_sender.send_rejection_email(
+                                            to_email=to_list,
+                                            candidate_name=resume.name or "Candidate",
+                                            company_name=job.company or "Our Company",
+                                            job_title=job.title or "the applied position",
+                                            gap_report=gap_report_text,
+                                            **creds
+                                        )
+                                    if result['success']:
+                                        st.success(f"✅ {result['message']}")
+                                    else:
+                                        st.error(f"❌ {result['message']}")
+                                except Exception as e:
+                                    st.error(f"Error sending email: {str(e)}")
+
+                else:  # Review → forward to hiring manager with resume attached
+                    st.subheader("📧 Send for Manual Review")
+                    st.info(
+                        "Forward the candidate's resume to the hiring manager for review. "
+                        "A score of 60–75% requires human judgement."
+                    )
+                    col_email, col_btn = st.columns([3, 1])
+                    with col_email:
+                        review_to = st.text_input(
+                            "Hiring Manager Email (To):",
+                            placeholder="manager@company.com",
+                            key="review_to",
+                            help="Hiring manager's email address"
+                        )
+                        review_cc = st.text_input(
+                            "CC (optional):",
+                            value="",
+                            placeholder="hr@company.com, recruiter@company.com",
+                            key="review_cc",
+                            help="One or more CC addresses separated by commas"
+                        )
+                    with col_btn:
+                        st.write("")
+                        st.write("")
+                        send_review_btn = st.button("📤 Send Review Request", type="secondary")
+
+                    resume_bytes = st.session_state.get('resume_file_bytes')
+                    resume_fname = st.session_state.get('resume_file_name')
+                    if resume_bytes:
+                        st.caption(f"📎 Resume file '{resume_fname}' will be attached.")
                     else:
-                        to_list = [e.strip() for e in recipient_email.split(',') if e.strip()]
-                        cc_list = [e.strip() for e in cc_email_input.split(',') if e.strip()]
-                        display_to = ', '.join(to_list)
+                        st.caption(
+                            "ℹ️ No resume file available to attach "
+                            "(resume was entered as text). "
+                            "The email will be sent without an attachment."
+                        )
 
-                        with st.spinner(f"Sending email to {display_to}..."):
-                            try:
-                                email_sender = EmailSender(
-                                    smtp_port=st.session_state.smtp_port,
-                                    use_ssl=st.session_state.use_ssl,
-                                    timeout=30
-                                )
-                                creds = dict(
-                                    sender_email=st.session_state.sender_email,
-                                    sender_password=st.session_state.sender_password,
-                                    cc_email=cc_list or None
-                                )
-
-                                if is_shortlisted:
-                                    result = email_sender.send_shortlist_email(
+                    if send_review_btn:
+                        if not review_to.strip():
+                            st.error("Please enter the hiring manager's email address.")
+                        elif not st.session_state.sender_email or not st.session_state.sender_password:
+                            st.error("⚠️ Please configure email settings in the sidebar first.")
+                        else:
+                            to_list = [e.strip() for e in review_to.split(',') if e.strip()]
+                            cc_list = [e.strip() for e in review_cc.split(',') if e.strip()]
+                            match_summary = (
+                                f"Skills: {match_result.get('skill_score', 0)}% | "
+                                f"Experience: {match_result.get('experience_score', 0)}% | "
+                                f"Education: {match_result.get('education_score', 0)}%"
+                            )
+                            with st.spinner(f"Sending review request to {', '.join(to_list)}..."):
+                                try:
+                                    email_sender = EmailSender(
+                                        smtp_port=st.session_state.smtp_port,
+                                        use_ssl=st.session_state.use_ssl,
+                                        timeout=30
+                                    )
+                                    result = email_sender.send_review_email(
                                         to_email=to_list,
                                         candidate_name=resume.name or "Candidate",
                                         company_name=job.company or "Our Company",
                                         job_title=job.title or "the applied position",
-                                        **creds
+                                        overall_score=overall_score,
+                                        sender_email=st.session_state.sender_email,
+                                        sender_password=st.session_state.sender_password,
+                                        cc_email=cc_list or None,
+                                        resume_bytes=resume_bytes,
+                                        resume_filename=resume_fname,
+                                        match_summary=match_summary
                                     )
-                                else:
-                                    # Build gap report text for the rejection email
-                                    report_gen = ReportGenerator()
-                                    gap_report_text = report_gen.generate_gap_report(gap_analysis)
-                                    result = email_sender.send_rejection_email(
-                                        to_email=to_list,
-                                        candidate_name=resume.name or "Candidate",
-                                        company_name=job.company or "Our Company",
-                                        job_title=job.title or "the applied position",
-                                        gap_report=gap_report_text,
-                                        **creds
-                                    )
-
-                                if result['success']:
-                                    st.success(f"✅ {result['message']}")
-                                else:
-                                    st.error(f"❌ {result['message']}")
-                            except Exception as e:
-                                st.error(f"Error sending email: {str(e)}")
+                                    if result['success']:
+                                        st.success(f"✅ {result['message']}")
+                                    else:
+                                        st.error(f"❌ {result['message']}")
+                                except Exception as e:
+                                    st.error(f"Error sending email: {str(e)}")
         else:
             st.info("Please complete resume and job matching analysis first")
 

@@ -1,0 +1,70 @@
+PRIYA RAGHUNATHAN
+priya.r@careershift.com | +1-415-222-8877
+LinkedIn: linkedin.com/in/priya-raghunathan
+
+OBJECTIVE
+Marketing professional of 5 years transitioning into Data Analytics / Business Intelligence.
+Completed intensive data science bootcamp (2023). Seeking first data analyst / junior BI role.
+
+PROFESSIONAL SUMMARY
+Background in brand marketing with a data-driven approach. Completed 6-month Data Science
+bootcamp at DataCamp Institute (2023). Skilled in Python, SQL, and Tableau. Built end-to-end
+data projects during bootcamp. Looking to leverage marketing domain expertise in a data role.
+
+EXPERIENCE (Pre-Transition — Marketing)
+
+Senior Marketing Manager
+GlobalBrand Consumer Goods, Chicago, IL
+May 2020 – June 2023 (3 years)
+- Managed $4M annual marketing budget across digital and traditional channels
+- Tracked campaign KPIs using Excel and Google Analytics — first exposure to data
+- Collaborated with analytics team to interpret A/B test results
+- Skills applied: Excel, Google Analytics, PowerPoint, budget management, storytelling
+
+Marketing Analyst
+DigitalFirst Agency, Chicago, IL
+September 2018 – April 2020 (1.5 years)
+- Analysed social media performance metrics and prepared weekly reports
+- Used Excel VLOOKUP/PivotTables intensively; introduced Python automation scripts
+- Ran paid search campaigns (Google Ads) and interpreted click-through data
+- Skills applied: Excel, Google Analytics, Facebook Ads Manager, early Python scripting
+
+BOOTCAMP PROJECTS (Data Science — DataCamp Institute, 2023)
+
+Customer Churn Prediction (Capstone)
+- Built classification model (Random Forest, XGBoost) achieving 87% accuracy
+- Performed EDA, feature engineering, and hyperparameter tuning
+- Tools: Python, Pandas, Scikit-learn, Matplotlib, Jupyter
+
+Sales Dashboard (Tableau)
+- Created interactive Tableau dashboard for a retail dataset (500K+ rows)
+- Identified $1.2M revenue leakage due to regional pricing anomalies
+
+SQL Analytics Project
+- Wrote complex SQL queries (CTEs, window functions) on PostgreSQL
+- Delivered stakeholder report on customer lifetime value segmentation
+
+EDUCATION
+
+Data Science Bootcamp Certificate
+DataCamp Institute, Chicago, IL
+Completed: December 2023
+
+Bachelor of Business Administration (BBA) — Marketing
+University of Illinois at Urbana-Champaign
+Graduated: May 2018
+GPA: 3.5/4.0
+
+TECHNICAL SKILLS (Post-Bootcamp)
+Programming: Python (Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn)
+Databases & SQL: PostgreSQL, MySQL, SQLite
+BI & Visualisation: Tableau, Power BI (basic), Excel (advanced)
+ML Basics: Regression, Classification, Clustering (Scikit-learn)
+Other Tools: Jupyter Notebook, Git, Google Sheets
+
+SOFT SKILLS
+Stakeholder communication, data storytelling, cross-functional collaboration, budget management
+
+CERTIFICATIONS
+- Google Data Analytics Professional Certificate (2023)
+- Tableau Desktop Specialist (2023)

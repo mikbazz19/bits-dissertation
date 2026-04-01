@@ -1,0 +1,57 @@
+Üniversiteli Öğrenci Müşteri ČEBIŠEV István Nándor
+vasilescu.andrei@techmail.ro | +40-721-456-789
+GitHub: github.com/andrei-vasilescu
+
+REZUMAT PROFESIONAL / PROFESSIONAL SUMMARY
+Senior Software Engineer cu 7 ani experiență în dezvoltarea aplicațiilor enterprise.
+7+ years of experience building scalable distributed systems and microservices.
+Fluent in English, Romanian, and French. Basic German (Grundkenntnisse Deutsch).
+
+EXPERIENȚĂ / EXPERIENCE
+
+Senior Software Engineer
+Société Générale Global Solution Centre, Bucharest, România
+Ianuarie 2021 – Prezent
+- Developed high-frequency trading platform processing 500K+ transactions/sec
+- Led migration of monolithic legacy system to event-driven microservices (Apache Kafka)
+- Technologies: Java (Spring Boot), Apache Kafka, Kubernetes, PostgreSQL, Redis, Docker
+
+Software Engineer
+Orange România, București
+Martie 2018 – Decembrie 2020
+- Built real-time billing system integrated with 3rd-party telecoms APIs
+- Implemented OAuth 2.0 / OIDC authentication across 12 internal services
+- Technologies: Java, Python, REST APIs, Oracle DB, Jenkins
+
+Junior Developer
+Freelancer / Remote – diverse clienți internaționali
+Septembrie 2016 – Februarie 2018
+- Developed web applications for SME clients in Western Europe
+- Technologies: PHP (Laravel), JavaScript (Vue.js), MySQL
+
+EDUCAȚIE / EDUCATION
+
+Master în Inginerie Software (MSc Software Engineering)
+Universitatea Politehnica București, România
+Absolvit: Iulie 2016
+
+Licență în Informatică (BSc Computer Science)
+Universitatea „Alexandru Ioan Cuza" din Iași, România
+Absolvit: Iulie 2014
+
+TECHNICAL SKILLS
+
+Languages: Java (primary), Python, PHP, JavaScript, TypeScript, SQL
+Frameworks: Spring Boot, Django, Laravel, Vue.js, React
+Messaging: Apache Kafka, RabbitMQ
+Databases: PostgreSQL, Oracle, MongoDB, Redis
+DevOps: Docker, Kubernetes, Jenkins, GitLab CI/CD
+Cloud: AWS (EC2, S3, RDS, EKS), Azure (basics)
+Other: Microservices, TDD, Clean Architecture, SOLID principles
+
+CERTIFICATIONS
+- Oracle Certified Professional: Java SE 11 Developer
+- Certified Kubernetes Administrator (CKA)
+- AWS Certified Developer – Associate
+
+NOTE: Cer viză de muncă H-1B / работаю удалённо — willing to relocate internationally.

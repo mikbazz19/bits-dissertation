@@ -1,0 +1,73 @@
+DR. SARAH KRISHNAMURTHY
+sarah.k@email.com | +1-617-333-9900
+PhD Computer Science | 15+ years industry experience | Ex-Google, Ex-Meta
+
+PROFILE
+Principal Engineer / Engineering Director with 15 years of experience designing distributed
+systems at hyperscale. PhD in Computer Science (MIT, 2009). Patents in distributed consensus
+and storage systems. Seeking Senior Software Engineer role.
+
+EXPERIENCE
+
+Principal Engineer, Infrastructure
+Meta Platforms (Facebook), Menlo Park, CA
+January 2018 – December 2023 (6 years)
+- Designed and led Instagram's global media storage migration (100 PB+, zero downtime)
+- Invented novel distributed consensus protocol patented as US 11,234,567
+- Grew and managed team of 25 engineers across 3 time zones
+- Led technical direction for 4 major infrastructure initiatives ($200M+ cost savings)
+- Technologies: C++, Python, Go, Apache Cassandra, Zookeeper, Thrift, Hadoop, Spark
+
+Staff Software Engineer, Core Infrastructure
+Google LLC, Mountain View, CA
+June 2012 – December 2017 (5.5 years)
+- Core contributor to Google Spanner (globally-distributed ACID database)
+- Authored 3 sections of internal design for TrueTime API
+- Mentored 15 engineers; 4 promoted to Senior/Staff under mentorship
+- Technologies: C++, Protocol Buffers, Borg (internal Kubernetes), Colossus (GFS v2)
+
+Software Engineer II
+Amazon Web Services (AWS), Seattle, WA
+August 2009 – May 2012 (2.5 years)
+- Contributed to DynamoDB's eventual consistency model (pre-GA)
+- Implemented adaptive compaction strategies reducing storage overhead by 28%
+- Technologies: Java, C++, AWS S3, EC2, internal tooling
+
+EDUCATION
+
+PhD in Computer Science (Distributed Systems)
+Massachusetts Institute of Technology (MIT)
+Completed: June 2009 | Advisor: Prof. Barbara Liskov
+Dissertation: "Adaptive Replication Strategies in Wide-Area Distributed Storage"
+
+Master of Science in Computer Science
+Stanford University
+Graduated: 2005
+
+Bachelor of Engineering in Electronics & Communication
+Indian Institute of Technology (IIT) Delhi
+Graduated: 2003 | Rank: 3rd in class
+
+PUBLICATIONS & PATENTS
+- US Patent 11,234,567: "Method and System for Adaptive Distributed Consensus" (2021)
+- US Patent 10,987,654: "Hierarchical Cache Invalidation in Distributed Systems" (2018)
+- OSDI 2016: "Megastore: Providing Scalable, Highly Available Storage for Interactive Services" (co-author)
+- VLDB 2014: "Spanner: Google's Globally Distributed Database" (co-author)
+
+TECHNICAL SKILLS
+Languages: C++, Python, Go, Java, Bash
+Distributed Systems: Consensus (Paxos, Raft), Distributed Storage, Eventual Consistency, CAP theorem
+Databases: Spanner, Cassandra, DynamoDB, PostgreSQL, BigQuery
+Cloud: AWS (core services), GCP (core services), internal hyperscale infra
+DevOps: Kubernetes, Docker, Terraform, Puppet
+Other: Systems Design, Large-scale Capacity Planning, Technical Leadership
+
+AWARDS & RECOGNITION
+- Google Perf Bonus (2015, 2016, 2017) — top 1% performance
+- Meta Above & Beyond Award (2020, 2022)
+- MIT EECS Teaching Assistant Excellence Award (2007)
+
+SPEAKING & COMMUNITY
+- Keynote: QCon SF 2022 — "Lessons from 100 PB of Distributed Storage"
+- Talk: Strange Loop 2019 — "Why Clocks Are Hard"
+- Open Source: Maintainer, Apache Cassandra (2014–2020, 2M+ downloads/month)

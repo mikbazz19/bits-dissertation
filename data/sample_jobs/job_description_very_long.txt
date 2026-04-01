@@ -1,0 +1,265 @@
+Software Engineer – Backend (Extended Requirements Listing)
+MegaCorp Inc. | Remote
+
+ABOUT THE ROLE
+This intentionally verbose job description is used to stress-test the parser's
+handling of large JD documents. Contains many requirement sections.
+
+REQUIREMENT GROUP 1
+  - Experience with technology stack 1 (Python, Java, or C++)
+  - Familiarity with cloud platform 1 (AWS, GCP, or Azure)
+  - 2+ years professional experience in area 1
+
+REQUIREMENT GROUP 2
+  - Experience with technology stack 2 (Python, Java, or C++)
+  - Familiarity with cloud platform 2 (AWS, GCP, or Azure)
+  - 3+ years professional experience in area 2
+
+REQUIREMENT GROUP 3
+  - Experience with technology stack 3 (Python, Java, or C++)
+  - Familiarity with cloud platform 3 (AWS, GCP, or Azure)
+  - 4+ years professional experience in area 3
+
+REQUIREMENT GROUP 4
+  - Experience with technology stack 4 (Python, Java, or C++)
+  - Familiarity with cloud platform 4 (AWS, GCP, or Azure)
+  - 5+ years professional experience in area 4
+
+REQUIREMENT GROUP 5
+  - Experience with technology stack 5 (Python, Java, or C++)
+  - Familiarity with cloud platform 5 (AWS, GCP, or Azure)
+  - 6+ years professional experience in area 5
+
+REQUIREMENT GROUP 6
+  - Experience with technology stack 6 (Python, Java, or C++)
+  - Familiarity with cloud platform 6 (AWS, GCP, or Azure)
+  - 7+ years professional experience in area 6
+
+REQUIREMENT GROUP 7
+  - Experience with technology stack 7 (Python, Java, or C++)
+  - Familiarity with cloud platform 7 (AWS, GCP, or Azure)
+  - 8+ years professional experience in area 7
+
+REQUIREMENT GROUP 8
+  - Experience with technology stack 8 (Python, Java, or C++)
+  - Familiarity with cloud platform 8 (AWS, GCP, or Azure)
+  - 9+ years professional experience in area 8
+
+REQUIREMENT GROUP 9
+  - Experience with technology stack 9 (Python, Java, or C++)
+  - Familiarity with cloud platform 9 (AWS, GCP, or Azure)
+  - 10+ years professional experience in area 9
+
+REQUIREMENT GROUP 10
+  - Experience with technology stack 10 (Python, Java, or C++)
+  - Familiarity with cloud platform 10 (AWS, GCP, or Azure)
+  - 11+ years professional experience in area 10
+
+REQUIREMENT GROUP 11
+  - Experience with technology stack 11 (Python, Java, or C++)
+  - Familiarity with cloud platform 11 (AWS, GCP, or Azure)
+  - 12+ years professional experience in area 11
+
+REQUIREMENT GROUP 12
+  - Experience with technology stack 12 (Python, Java, or C++)
+  - Familiarity with cloud platform 12 (AWS, GCP, or Azure)
+  - 13+ years professional experience in area 12
+
+REQUIREMENT GROUP 13
+  - Experience with technology stack 13 (Python, Java, or C++)
+  - Familiarity with cloud platform 13 (AWS, GCP, or Azure)
+  - 14+ years professional experience in area 13
+
+REQUIREMENT GROUP 14
+  - Experience with technology stack 14 (Python, Java, or C++)
+  - Familiarity with cloud platform 14 (AWS, GCP, or Azure)
+  - 15+ years professional experience in area 14
+
+REQUIREMENT GROUP 15
+  - Experience with technology stack 15 (Python, Java, or C++)
+  - Familiarity with cloud platform 15 (AWS, GCP, or Azure)
+  - 16+ years professional experience in area 15
+
+REQUIREMENT GROUP 16
+  - Experience with technology stack 16 (Python, Java, or C++)
+  - Familiarity with cloud platform 16 (AWS, GCP, or Azure)
+  - 17+ years professional experience in area 16
+
+REQUIREMENT GROUP 17
+  - Experience with technology stack 17 (Python, Java, or C++)
+  - Familiarity with cloud platform 17 (AWS, GCP, or Azure)
+  - 18+ years professional experience in area 17
+
+REQUIREMENT GROUP 18
+  - Experience with technology stack 18 (Python, Java, or C++)
+  - Familiarity with cloud platform 18 (AWS, GCP, or Azure)
+  - 19+ years professional experience in area 18
+
+REQUIREMENT GROUP 19
+  - Experience with technology stack 19 (Python, Java, or C++)
+  - Familiarity with cloud platform 19 (AWS, GCP, or Azure)
+  - 20+ years professional experience in area 19
+
+REQUIREMENT GROUP 20
+  - Experience with technology stack 20 (Python, Java, or C++)
+  - Familiarity with cloud platform 20 (AWS, GCP, or Azure)
+  - 21+ years professional experience in area 20
+
+REQUIREMENT GROUP 21
+  - Experience with technology stack 21 (Python, Java, or C++)
+  - Familiarity with cloud platform 21 (AWS, GCP, or Azure)
+  - 22+ years professional experience in area 21
+
+REQUIREMENT GROUP 22
+  - Experience with technology stack 22 (Python, Java, or C++)
+  - Familiarity with cloud platform 22 (AWS, GCP, or Azure)
+  - 23+ years professional experience in area 22
+
+REQUIREMENT GROUP 23
+  - Experience with technology stack 23 (Python, Java, or C++)
+  - Familiarity with cloud platform 23 (AWS, GCP, or Azure)
+  - 24+ years professional experience in area 23
+
+REQUIREMENT GROUP 24
+  - Experience with technology stack 24 (Python, Java, or C++)
+  - Familiarity with cloud platform 24 (AWS, GCP, or Azure)
+  - 25+ years professional experience in area 24
+
+REQUIREMENT GROUP 25
+  - Experience with technology stack 25 (Python, Java, or C++)
+  - Familiarity with cloud platform 25 (AWS, GCP, or Azure)
+  - 26+ years professional experience in area 25
+
+REQUIREMENT GROUP 26
+  - Experience with technology stack 26 (Python, Java, or C++)
+  - Familiarity with cloud platform 26 (AWS, GCP, or Azure)
+  - 27+ years professional experience in area 26
+
+REQUIREMENT GROUP 27
+  - Experience with technology stack 27 (Python, Java, or C++)
+  - Familiarity with cloud platform 27 (AWS, GCP, or Azure)
+  - 28+ years professional experience in area 27
+
+REQUIREMENT GROUP 28
+  - Experience with technology stack 28 (Python, Java, or C++)
+  - Familiarity with cloud platform 28 (AWS, GCP, or Azure)
+  - 29+ years professional experience in area 28
+
+REQUIREMENT GROUP 29
+  - Experience with technology stack 29 (Python, Java, or C++)
+  - Familiarity with cloud platform 29 (AWS, GCP, or Azure)
+  - 30+ years professional experience in area 29
+
+REQUIREMENT GROUP 30
+  - Experience with technology stack 30 (Python, Java, or C++)
+  - Familiarity with cloud platform 30 (AWS, GCP, or Azure)
+  - 31+ years professional experience in area 30
+
+REQUIREMENT GROUP 31
+  - Experience with technology stack 31 (Python, Java, or C++)
+  - Familiarity with cloud platform 31 (AWS, GCP, or Azure)
+  - 32+ years professional experience in area 31
+
+REQUIREMENT GROUP 32
+  - Experience with technology stack 32 (Python, Java, or C++)
+  - Familiarity with cloud platform 32 (AWS, GCP, or Azure)
+  - 33+ years professional experience in area 32
+
+REQUIREMENT GROUP 33
+  - Experience with technology stack 33 (Python, Java, or C++)
+  - Familiarity with cloud platform 33 (AWS, GCP, or Azure)
+  - 34+ years professional experience in area 33
+
+REQUIREMENT GROUP 34
+  - Experience with technology stack 34 (Python, Java, or C++)
+  - Familiarity with cloud platform 34 (AWS, GCP, or Azure)
+  - 35+ years professional experience in area 34
+
+REQUIREMENT GROUP 35
+  - Experience with technology stack 35 (Python, Java, or C++)
+  - Familiarity with cloud platform 35 (AWS, GCP, or Azure)
+  - 36+ years professional experience in area 35
+
+REQUIREMENT GROUP 36
+  - Experience with technology stack 36 (Python, Java, or C++)
+  - Familiarity with cloud platform 36 (AWS, GCP, or Azure)
+  - 37+ years professional experience in area 36
+
+REQUIREMENT GROUP 37
+  - Experience with technology stack 37 (Python, Java, or C++)
+  - Familiarity with cloud platform 37 (AWS, GCP, or Azure)
+  - 38+ years professional experience in area 37
+
+REQUIREMENT GROUP 38
+  - Experience with technology stack 38 (Python, Java, or C++)
+  - Familiarity with cloud platform 38 (AWS, GCP, or Azure)
+  - 39+ years professional experience in area 38
+
+REQUIREMENT GROUP 39
+  - Experience with technology stack 39 (Python, Java, or C++)
+  - Familiarity with cloud platform 39 (AWS, GCP, or Azure)
+  - 40+ years professional experience in area 39
+
+REQUIREMENT GROUP 40
+  - Experience with technology stack 40 (Python, Java, or C++)
+  - Familiarity with cloud platform 40 (AWS, GCP, or Azure)
+  - 41+ years professional experience in area 40
+
+REQUIREMENT GROUP 41
+  - Experience with technology stack 41 (Python, Java, or C++)
+  - Familiarity with cloud platform 41 (AWS, GCP, or Azure)
+  - 42+ years professional experience in area 41
+
+REQUIREMENT GROUP 42
+  - Experience with technology stack 42 (Python, Java, or C++)
+  - Familiarity with cloud platform 42 (AWS, GCP, or Azure)
+  - 43+ years professional experience in area 42
+
+REQUIREMENT GROUP 43
+  - Experience with technology stack 43 (Python, Java, or C++)
+  - Familiarity with cloud platform 43 (AWS, GCP, or Azure)
+  - 44+ years professional experience in area 43
+
+REQUIREMENT GROUP 44
+  - Experience with technology stack 44 (Python, Java, or C++)
+  - Familiarity with cloud platform 44 (AWS, GCP, or Azure)
+  - 45+ years professional experience in area 44
+
+REQUIREMENT GROUP 45
+  - Experience with technology stack 45 (Python, Java, or C++)
+  - Familiarity with cloud platform 45 (AWS, GCP, or Azure)
+  - 46+ years professional experience in area 45
+
+REQUIREMENT GROUP 46
+  - Experience with technology stack 46 (Python, Java, or C++)
+  - Familiarity with cloud platform 46 (AWS, GCP, or Azure)
+  - 47+ years professional experience in area 46
+
+REQUIREMENT GROUP 47
+  - Experience with technology stack 47 (Python, Java, or C++)
+  - Familiarity with cloud platform 47 (AWS, GCP, or Azure)
+  - 48+ years professional experience in area 47
+
+REQUIREMENT GROUP 48
+  - Experience with technology stack 48 (Python, Java, or C++)
+  - Familiarity with cloud platform 48 (AWS, GCP, or Azure)
+  - 49+ years professional experience in area 48
+
+REQUIREMENT GROUP 49
+  - Experience with technology stack 49 (Python, Java, or C++)
+  - Familiarity with cloud platform 49 (AWS, GCP, or Azure)
+  - 50+ years professional experience in area 49
+
+REQUIREMENT GROUP 50
+  - Experience with technology stack 50 (Python, Java, or C++)
+  - Familiarity with cloud platform 50 (AWS, GCP, or Azure)
+  - 51+ years professional experience in area 50
+
+CORE REQUIRED SKILLS
+RequiredSkill-1, RequiredSkill-2, RequiredSkill-3, RequiredSkill-4, RequiredSkill-5, RequiredSkill-6, RequiredSkill-7, RequiredSkill-8, RequiredSkill-9, RequiredSkill-10, RequiredSkill-11, RequiredSkill-12, RequiredSkill-13, RequiredSkill-14, RequiredSkill-15, RequiredSkill-16, RequiredSkill-17, RequiredSkill-18, RequiredSkill-19, RequiredSkill-20, RequiredSkill-21, RequiredSkill-22, RequiredSkill-23, RequiredSkill-24, RequiredSkill-25, RequiredSkill-26, RequiredSkill-27, RequiredSkill-28, RequiredSkill-29, RequiredSkill-30, RequiredSkill-31, RequiredSkill-32, RequiredSkill-33, RequiredSkill-34, RequiredSkill-35, RequiredSkill-36, RequiredSkill-37, RequiredSkill-38, RequiredSkill-39, RequiredSkill-40, RequiredSkill-41, RequiredSkill-42, RequiredSkill-43, RequiredSkill-44, RequiredSkill-45, RequiredSkill-46, RequiredSkill-47, RequiredSkill-48, RequiredSkill-49, RequiredSkill-50, RequiredSkill-51, RequiredSkill-52, RequiredSkill-53, RequiredSkill-54, RequiredSkill-55, RequiredSkill-56, RequiredSkill-57, RequiredSkill-58, RequiredSkill-59, RequiredSkill-60, RequiredSkill-61, RequiredSkill-62, RequiredSkill-63, RequiredSkill-64, RequiredSkill-65, RequiredSkill-66, RequiredSkill-67, RequiredSkill-68, RequiredSkill-69, RequiredSkill-70, RequiredSkill-71, RequiredSkill-72, RequiredSkill-73, RequiredSkill-74, RequiredSkill-75, RequiredSkill-76, RequiredSkill-77, RequiredSkill-78, RequiredSkill-79, RequiredSkill-80, RequiredSkill-81, RequiredSkill-82, RequiredSkill-83, RequiredSkill-84, RequiredSkill-85, RequiredSkill-86, RequiredSkill-87, RequiredSkill-88, RequiredSkill-89, RequiredSkill-90, RequiredSkill-91, RequiredSkill-92, RequiredSkill-93, RequiredSkill-94, RequiredSkill-95, RequiredSkill-96, RequiredSkill-97, RequiredSkill-98, RequiredSkill-99, RequiredSkill-100, RequiredSkill-101, RequiredSkill-102, RequiredSkill-103, RequiredSkill-104, RequiredSkill-105, RequiredSkill-106, RequiredSkill-107, RequiredSkill-108, RequiredSkill-109, RequiredSkill-110, RequiredSkill-111, RequiredSkill-112, RequiredSkill-113, RequiredSkill-114, RequiredSkill-115, RequiredSkill-116, RequiredSkill-117, RequiredSkill-118, RequiredSkill-119, RequiredSkill-120, RequiredSkill-121, RequiredSkill-122, RequiredSkill-123, RequiredSkill-124, RequiredSkill-125, RequiredSkill-126, RequiredSkill-127, RequiredSkill-128, RequiredSkill-129, RequiredSkill-130, RequiredSkill-131, RequiredSkill-132, RequiredSkill-133, RequiredSkill-134, RequiredSkill-135, RequiredSkill-136, RequiredSkill-137, RequiredSkill-138, RequiredSkill-139, RequiredSkill-140, RequiredSkill-141, RequiredSkill-142, RequiredSkill-143, RequiredSkill-144, RequiredSkill-145, RequiredSkill-146, RequiredSkill-147, RequiredSkill-148, RequiredSkill-149, RequiredSkill-150
+
+EDUCATION
+Bachelor's degree in Computer Science or related field required.
+
+EXPERIENCE
+Minimum 3 years professional software engineering experience.

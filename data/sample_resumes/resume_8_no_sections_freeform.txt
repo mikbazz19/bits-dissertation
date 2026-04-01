@@ -1,0 +1,25 @@
+Marcus T. Williams – marcus.williams.dev@protonmail.com – (312) 555-0142
+
+I am a software developer with about 8 years of experience building things on the web and in the cloud.
+Most of my work has been in Python and JavaScript. I really enjoy building APIs. I have worked with
+Django, FastAPI, and Flask on the backend side of things. On the frontend I know React and some Vue.
+
+I have been at Reliable Systems Co. since 2019 where I am the lead developer on a team of four.
+Before that I spent three years at a startup called QuickBuild that unfortunately folded in 2019.
+And before that I had a short stint at a consulting firm after I graduated. I have a computer science
+degree from the University of Illinois Chicago which I finished in 2014.
+
+I know SQL pretty well — mainly PostgreSQL. I have used MongoDB a few times. Redis for caching.
+I have set up AWS infrastructure before including EC2, S3, Lambda, and RDS. Also comfortable with
+Docker and have used Kubernetes a bit but I would not call myself an expert in it. I have set up
+CI/CD pipelines using GitHub Actions and Jenkins. I write tests mostly in pytest and jest.
+
+Some things I have built: a real-time notification system using WebSockets and Redis pub/sub, a
+document parsing pipeline that handled PDFs and images, a multi-tenant SaaS dashboard in React with
+role-based access control, and an internal analytics tool that processed about 2 million rows a day.
+
+I do not have a lot of certifications but I stay current by reading tech blogs, contributing to a
+couple of small open source libraries on GitHub, and doing side projects. I am a quick learner and
+good at debugging hard problems. I work well with teams and can also take ownership independently.
+
+Contact me at marcus.williams.dev@protonmail.com or call (312) 555-0142 any weekday before 6pm CT.

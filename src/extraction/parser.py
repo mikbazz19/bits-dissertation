@@ -62,14 +62,31 @@ def parse_document(file_path: Union[str, Path]) -> str:
 
 
 def _extract_native_pdf_text(file_path: Path) -> str:
-    """Extract embedded text from a PDF using PyMuPDF / pdfminer (existing logic)."""
-    # ...existing code...
-    return ""
+    """Extract embedded text from a PDF using PyPDF2."""
+    try:
+        import PyPDF2
+        text_parts = []
+        with open(file_path, 'rb') as fh:
+            reader = PyPDF2.PdfReader(fh)
+            for page in reader.pages:
+                page_text = page.extract_text() or ""
+                text_parts.append(page_text)
+        return "\n".join(text_parts)
+    except Exception:
+        return ""
 
 
 def _extract_plain_text(file_path: Path) -> str:
-    """Read a plain-text file."""
-    # ...existing code...
+    """Extract text from .txt or .docx files."""
+    suffix = file_path.suffix.lower()
+    if suffix == '.docx':
+        try:
+            import docx
+            doc = docx.Document(file_path)
+            return "\n".join(p.text for p in doc.paragraphs)
+        except Exception as e:
+            raise ValueError(f"Error parsing DOCX: {e}")
+    # Default: plain text
     return file_path.read_text(encoding='utf-8', errors='replace')
 
 

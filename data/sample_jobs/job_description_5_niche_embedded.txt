@@ -1,0 +1,63 @@
+Embedded Systems Engineer – Safety-Critical Automotive (AUTOSAR / ISO 26262)
+AutoDrive Systems GmbH | Munich, Germany (On-site required)
+
+ABOUT THE ROLE
+We develop ADAS (Advanced Driver Assistance Systems) and autonomous driving software for Tier-1
+automotive suppliers. This is a highly specialised role demanding deep embedded and automotive
+domain expertise.
+
+MANDATORY TECHNICAL REQUIREMENTS (ALL must be met)
+
+Embedded C/C++:
+- 5+ years of production experience in C and C++ for embedded/bare-metal targets
+- Strong understanding of memory management without OS support (no malloc in ISR contexts)
+- Proficiency with ARM Cortex-M/R processors (NVIC, MPU, TrustZone awareness)
+- Experience writing and debugging interrupt service routines (ISRs) and DMA handlers
+
+AUTOSAR Classic / Adaptive:
+- Minimum 3 years hands-on with AUTOSAR Classic Platform (OS, RTE, COM stack, Diagnostics)
+- Familiarity with AUTOSAR Adaptive Platform (ARA::COM, Execution Management) is a plus
+- Experience with toolchains: ETAS ISOLAR, Vector DaVinci, EB tresos
+
+Safety Standards:
+- Solid knowledge of ISO 26262 (Functional Safety for Road Vehicles) — minimum ASIL-B level
+- Experience with FMEA, FTA, HARA in a product development context
+- Familiarity with MISRA C:2012 compliance and static analysis (Polyspace, Coverity, PC-lint)
+
+Protocols & Interfaces:
+- Deep knowledge of CAN (Classical CAN, CAN-FD) and LIN; experience with CANalyzer / CANoe
+- Familiarity with Automotive Ethernet (SOME/IP, DoIP), FlexRay
+- Experience with UDS (Unified Diagnostic Services) and OBD-II
+
+Build & Integration:
+- CMake or make-based build systems for embedded targets
+- Cross-compilation toolchains (GCC ARM, IAR, KEIL MDK)
+- Experience with HIL (Hardware-in-the-Loop) and SIL/MIL testing environments
+- JTAG / SWD debugger experience (TRACE32, J-Link)
+
+Version Control & ALM:
+- Git, DOORS / Polarion / Jama for requirements traceability
+- Experience with Jenkins or similar for embedded CI
+
+PREFERRED (NICE TO HAVE)
+- Experience with Rust for safety-critical embedded (emerging in automotive context)
+- Knowledge of SOTIF (ISO 21448) and cybersecurity standard ISO/SAE 21434
+- Exposure to ROS2 for ADAS perception pipelines
+- German language skills (B2 or above)
+
+EDUCATION
+- Master's degree in Electrical Engineering, Computer Engineering, or Embedded Systems required
+- PhD in relevant field is a distinct advantage
+
+EXPERIENCE
+- Minimum 7 years in automotive or safety-critical embedded development
+- At least one production programme taken to SOP (Start of Production)
+
+WHAT WE OFFER
+- Competitive German market salary (€85,000 – €120,000 gross/year depending on experience)
+- Relocation support to Munich
+- Blue Card sponsorship for non-EU candidates
+- Access to prototype test vehicles and proving grounds
+- Internal Automotive Academy training programme
+
+Strictly no remote. Must be willing to travel to customer sites in Germany and occasionally to Asia.

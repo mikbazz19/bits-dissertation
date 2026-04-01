@@ -1,0 +1,42 @@
+POSITION: DevOps / Platform Engineer
+COMPANY: CloudEdge Infrastructure Ltd.
+LOCATION: London, UK (Remote-first)
+
+ABOUT THE ROLE
+CloudEdge builds multi-tenant cloud infrastructure tooling for enterprise customers across Europe
+and North America. We are looking for an experienced DevOps / Platform Engineer to own our
+Kubernetes-based deployment platform, CI/CD pipelines, and cloud cost management strategy.
+
+RESPONSIBILITIES
+- Design, build, and maintain Kubernetes clusters (EKS / GKE) for production workloads
+- Manage infrastructure-as-code using Terraform and Helm
+- Build and maintain CI/CD pipelines (GitHub Actions, Jenkins, ArgoCD)
+- Automate operational tasks with Python scripting
+- Drive cloud cost optimisation across AWS and GCP
+- Implement and maintain observability stack (Prometheus, Grafana, ELK / EFK)
+- Enforce security best practices: RBAC, secrets management (Vault), network policies
+- Mentor junior engineers and contribute to runbooks and documentation
+- Participate in on-call rota for platform incidents
+
+REQUIREMENTS
+- 5+ years of DevOps / Platform / SRE engineering experience
+- Expert-level Kubernetes knowledge (CKA or equivalent experience preferred)
+- Hands-on experience with Terraform for cloud infrastructure provisioning
+- Strong AWS skills; GCP or Azure experience is a bonus
+- Proficiency in Python for automation and tooling
+- Experience with container runtimes (Docker, containerd) and image registries
+- Solid understanding of networking (VPC, DNS, load balancing, ingress controllers)
+- Experience with at least one CI/CD platform (GitHub Actions, Jenkins, ArgoCD, Tekton)
+- Familiarity with GitOps workflows
+
+PREFERRED
+- AWS Certified DevOps Engineer or AWS Solutions Architect certification
+- Experience with service mesh technologies (Istio, Linkerd)
+- Background in FinTech or SaaS platform engineering
+- Experience with Ansible or Chef/Puppet for configuration management
+
+COMPENSATION
+- £75,000 – £95,000 per annum
+- Remote-first with optional co-working spaces in London and Berlin
+- Equipment budget and annual learning allowance
+- 25 days holiday + bank holidays

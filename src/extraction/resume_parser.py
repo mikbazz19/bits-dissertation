@@ -35,8 +35,9 @@ _STREAM_RE = re.compile(
 )
 
 # Institution name — stop at comma, newline, parenthesis, a 4-digit year, or GPA/CGPA
+# universit\w* covers university/université/universidad/universität/universitatea/etc.
 _INST_RE = re.compile(
-    r'(?:university|college|institute|iit|nit|bits|academy|polytechnic|school)'
+    r'(?:universit\w+|college|institute|iit|nit|bits|academy|polytechnic|school|facult\w+|hochschule)'
     r'[^,\n(]*?(?=\s*(?:\b(?:19|20)\d{2}\b|\bGPA\b|\bCGPA\b|,|\n|\()|$)',
     re.IGNORECASE,
 )
@@ -83,6 +84,21 @@ def _parse_education_group(lines: List[str]) -> Optional[Education]:
         im = _INST_RE.search(line)
         if im:
             institution = im.group(0).strip().rstrip(' ,')
+            break
+
+    # Fallback: if still no institution, the second non-blank, non-degree,
+    # non-date line is likely the institution (e.g. foreign-language names)
+    if not institution and len(lines) >= 2:
+        for line in lines[1:]:
+            line = line.strip()
+            if not line:
+                continue
+            # Skip lines that look like dates, GPA, bullets, or are the degree line
+            if re.search(r'\b(19|20)\d{2}\b|GPA|CGPA|^[-•*]', line):
+                continue
+            if _has_degree_marker(line):
+                continue
+            institution = line.split(',')[0].strip()  # drop trailing country/city
             break
 
     # Year — take first occurrence
@@ -197,7 +213,7 @@ def extract_resume_info(text: str, ocr_sections: Optional[Dict] = None) -> Resum
         # Native-text path: slice the education section
         # Allow blank lines after the heading (\n+), stop at next ALL-CAPS section heading
         edu_match = re.search(
-            r'(?:^|\n)[ \t]*(?:EDUCATION|Academic\s+Background|Qualifications?)[ \t]*\n+'  
+            r'(?:^|\n)[^\n]*?(?:EDUCATION|EDUCATI[EO]\b|Academic\s+Background|Qualifications?)[^\n]*\n+'
             r'(.*?)(?=\n[ \t]*[A-Z][A-Z\s]{3,}\n|\Z)',
             text, re.DOTALL | re.IGNORECASE
         )

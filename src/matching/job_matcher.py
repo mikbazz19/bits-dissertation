@@ -18,36 +18,63 @@ class JobMatcher:
         self.education_weight = Config.EDUCATION_WEIGHT
     
     def match_resume_to_job(self, resume: Resume, job: JobDescription) -> Dict:
-        """Calculate match score between resume and job description"""
-        
-        # Calculate component scores
+        """Calculate match score between resume and job description."""
+
+        # Step 1: Hard filters
+        hard_filter_results, hard_filters_passed = self._apply_hard_filters(resume, job)
+
+        # Step 2: Component scores (always calculated for transparency)
         skill_score = self._calculate_skill_match(resume, job)
         experience_score = self._calculate_experience_match(resume, job)
         education_score = self._calculate_education_match(resume, job)
-        
-        # Calculate weighted overall score
+
+        # Step 3: Weighted overall
         overall_score = (
             skill_score * self.skill_weight +
             experience_score * self.experience_weight +
             education_score * self.education_weight
         )
-        
-        # Determine match level
+
+        # Step 4: Confidence factor (penalises sparse resume data)
+        confidence_factor = self._compute_confidence(resume)
+        overall_score = overall_score * confidence_factor
+        overall_pct = round(overall_score * 100, 2)
+
+        # Step 5: Decision
+        if not hard_filters_passed:
+            decision = "Reject"
+            decision_reason = self._hard_filter_failure_reason(hard_filter_results)
+        elif overall_pct >= Config.ACCEPT_THRESHOLD:
+            decision = "Accept"
+            decision_reason = "Meets all requirements with a strong overall score."
+        elif overall_pct >= Config.REVIEW_THRESHOLD:
+            decision = "Review"
+            decision_reason = "Moderate match — requires human review before final decision."
+        else:
+            decision = "Reject"
+            decision_reason = (
+                f"Overall score {overall_pct}% is below the acceptance threshold "
+                f"({Config.REVIEW_THRESHOLD}%)."
+            )
+
         match_level = self._determine_match_level(overall_score)
-        
-        # Calculate skill gaps
         missing_skills = self._find_missing_skills(resume, job)
-        
+
         return {
-            'overall_score': round(overall_score * 100, 2),
+            'overall_score': overall_pct,
             'skill_score': round(skill_score * 100, 2),
             'experience_score': round(experience_score * 100, 2),
             'education_score': round(education_score * 100, 2),
+            'confidence_factor': confidence_factor,
+            'hard_filter_results': hard_filter_results,
+            'hard_filters_passed': hard_filters_passed,
+            'decision': decision,
+            'decision_reason': decision_reason,
             'match_level': match_level,
             'missing_required_skills': missing_skills['required'],
             'missing_preferred_skills': missing_skills['preferred'],
             'matched_skills': missing_skills['matched'],
-            'recommendation': self._generate_recommendation(overall_score, missing_skills)
+            'recommendation': self._generate_recommendation(overall_pct, missing_skills, decision)
         }
     
     def rank_candidates(self, resumes: List[Resume], job: JobDescription) -> List[Dict]:
@@ -147,27 +174,115 @@ class JobMatcher:
             'matched': matched_required
         }
     
+    def _apply_hard_filters(self, resume: Resume, job: JobDescription) -> tuple:
+        """Check mandatory requirements before scoring."""
+        results = {}
+
+        # Filter 1: Minimum experience
+        req_exp = job.required_experience or 0
+        cand_exp = resume.total_experience_years or 0
+        results['experience'] = {
+            'label': 'Minimum Experience',
+            'passed': (req_exp == 0) or (cand_exp >= req_exp),
+            'detail': f"{cand_exp} yrs (required: {req_exp} yrs)"
+        }
+
+        # Filter 2: Mandatory skills (must match at least half of top-5 required skills)
+        if job.required_skills:
+            resume_skills_norm = set(normalize_skill(s) for s in resume.skills)
+            top_req = job.required_skills[:5]
+            matched = sum(1 for s in top_req if normalize_skill(s) in resume_skills_norm)
+            min_match = max(1, (len(top_req) + 1) // 2)
+            results['mandatory_skills'] = {
+                'label': 'Mandatory Skills',
+                'passed': matched >= min_match,
+                'detail': f"{matched}/{len(top_req)} key required skills matched (min {min_match})"
+            }
+        else:
+            results['mandatory_skills'] = {
+                'label': 'Mandatory Skills',
+                'passed': True,
+                'detail': 'No required skills specified'
+            }
+
+        # Filter 3: Education (only if job explicitly requires it)
+        if job.education_requirements:
+            has_edu = bool(resume.education)
+            results['education'] = {
+                'label': 'Required Education',
+                'passed': has_edu,
+                'detail': 'Qualifying degree found' if has_edu else 'No qualifying degree found'
+            }
+        else:
+            results['education'] = {
+                'label': 'Required Education',
+                'passed': True,
+                'detail': 'No specific education required'
+            }
+
+        # Filter 4: Overqualification — reject if experience exceeds requirement by buffer
+        if req_exp > 0:
+            buffer = Config.OVERQUALIFICATION_YEARS_BUFFER
+            overqualified = cand_exp > req_exp + buffer
+            results['overqualification'] = {
+                'label': 'Experience Fit',
+                'passed': not overqualified,
+                'detail': (
+                    f"{cand_exp} yrs exceeds the role's requirement of {req_exp} yrs "
+                    f"by more than {buffer} years — candidate may be overqualified."
+                    if overqualified else
+                    f"{cand_exp} yrs is within acceptable range for {req_exp} yrs required."
+                )
+            }
+        else:
+            results['overqualification'] = {
+                'label': 'Experience Fit',
+                'passed': True,
+                'detail': 'No experience requirement specified'
+            }
+
+        all_passed = all(v['passed'] for v in results.values())
+        return results, all_passed
+
+    def _compute_confidence(self, resume: Resume) -> float:
+        """Return a confidence factor (0–1) based on resume data completeness."""
+        factor = 1.0
+        if not resume.skills:
+            factor *= 0.85
+        if not resume.education:
+            factor *= 0.95
+        if resume.total_experience_years == 0:
+            factor *= 0.90
+        return round(factor, 3)
+
+    def _hard_filter_failure_reason(self, results: Dict) -> str:
+        reasons = []
+        for v in results.values():
+            if not v['passed']:
+                reasons.append(v['detail'])
+        return " | ".join(reasons) if reasons else "Eligibility check failed."
+
     def _determine_match_level(self, score: float) -> str:
-        """Determine match level based on score"""
-        if score >= 0.8:
-            return "Excellent Match"
-        elif score >= 0.6:
-            return "Good Match"
-        elif score >= 0.4:
-            return "Fair Match"
+        """Determine match level based on score."""
+        pct = score * 100
+        if pct >= Config.ACCEPT_THRESHOLD:
+            return "Strong Match"
+        elif pct >= Config.REVIEW_THRESHOLD:
+            return "Moderate Match"
         else:
-            return "Poor Match"
-    
-    def _generate_recommendation(self, score: float, missing_skills: Dict) -> str:
-        """Generate recommendation based on match"""
-        if score >= 0.8:
+            return "Weak Match"
+
+    def _generate_recommendation(self, score_pct: float, missing_skills: Dict, decision: str) -> str:
+        """Generate recommendation based on decision."""
+        if decision == "Accept":
             return "Strong candidate. Recommend for interview."
-        elif score >= 0.6:
-            if len(missing_skills['required']) <= 2:
-                return "Good candidate. Consider for interview with skill assessment."
-            else:
-                return "Candidate shows potential. May need training in key areas."
-        elif score >= 0.4:
-            return f"Below requirements. Missing {len(missing_skills['required'])} critical skills."
+        elif decision == "Review":
+            n = len(missing_skills['required'])
+            if n:
+                return f"Moderate fit. Review manually — missing {n} required skill(s)."
+            return "Moderate fit. Recommend manual review before deciding."
         else:
-            return "Not recommended. Significant skill and experience gaps."
+            n = len(missing_skills['required'])
+            if n:
+                return f"Below requirements. Missing {n} critical skill(s). Not recommended."
+            return f"Score {score_pct}% below threshold. Not recommended for this role."

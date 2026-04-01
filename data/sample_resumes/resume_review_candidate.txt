@@ -1,0 +1,42 @@
+PRIYA SHARMA
+priya.sharma@techmail.com | (415) 555-2291
+LinkedIn: linkedin.com/in/priyasharma
+
+PROFESSIONAL SUMMARY
+Machine Learning Engineer with over 3 years of experience building predictive models
+and data pipelines. Proficient in PyTorch and Python for developing ML solutions.
+Focused on supervised learning and batch processing workflows.
+
+EXPERIENCE
+
+Machine Learning Engineer
+DataFlow Inc., San Francisco, CA
+June 2023 - Present
+- Developed supervised learning models for customer churn prediction using PyTorch
+- Built batch processing pipelines at scale using Spark
+- Designed and evaluated classification models end-to-end in Python
+- Presented model results and performance metrics to stakeholders
+- Technologies: Python, PyTorch, Spark, Machine Learning
+
+Junior Data Scientist
+InnovateLab, Austin, TX
+January 2023 - May 2023
+- Supported development of prototype ML models for an internal product team
+- Prepared and cleaned structured datasets for model training
+- Technologies: Python, Machine Learning
+
+EDUCATION
+
+Bachelor of Engineering in Computer Science
+Mumbai University
+Graduated: December 2021
+GPA: 3.4/4.0
+
+TECHNICAL SKILLS
+Programming: Python
+Frameworks: PyTorch, Spark
+Version Control: Git
+Methodology: Agile
+
+CERTIFICATIONS
+- Google Professional Machine Learning Engineer (2023)

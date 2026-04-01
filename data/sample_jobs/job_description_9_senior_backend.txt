@@ -1,0 +1,39 @@
+POSITION: Senior Software Engineer – Backend
+COMPANY: Meridian Financial Systems
+LOCATION: New York, NY (Hybrid / Remote)
+
+ABOUT THE ROLE
+Meridian Financial Systems builds core banking and payments infrastructure for mid-market
+financial institutions. We are hiring a Senior Backend Engineer to strengthen our services team.
+We value pragmatic engineers with a track record of delivering reliable, maintainable software.
+
+RESPONSIBILITIES
+- Architect and implement high-throughput backend services in Python and/or Java
+- Design data models and optimize queries for PostgreSQL and Cassandra
+- Build and maintain event-driven pipelines using Kafka
+- Participate in architecture reviews and contribute to technical roadmap
+- Collaborate cross-functionally with product, QA, and DevOps teams
+- Support production systems through on-call responsibilities
+
+REQUIREMENTS
+- 7+ years of professional software engineering experience
+- Strong proficiency in Python and/or Java
+- Experience designing and building distributed backend services
+- Familiarity with relational databases (PostgreSQL preferred) and NoSQL stores
+- Understanding of asynchronous messaging patterns (Kafka, RabbitMQ, or similar)
+- Experience with REST and gRPC API design
+- Comfortable working in Linux environments
+
+PREFERRED
+- Background in fintech, banking, or high-compliance regulated industries
+- Experience with Kubernetes or containerised deployments
+- Familiarity with Spring Boot (Java) or FastAPI / Django (Python)
+
+NOTE ON EMPLOYMENT HISTORY
+We understand that careers are not always linear. Career breaks for personal, family, or health
+reasons are fully respected. We assess candidates on their skills and impact, not continuity.
+
+COMPENSATION
+- $145,000 – $175,000 base salary
+- Annual performance bonus
+- Comprehensive benefits package including 401(k) matching

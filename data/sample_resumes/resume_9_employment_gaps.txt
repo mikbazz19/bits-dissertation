@@ -1,0 +1,60 @@
+DAVID OKONKWO
+david.okonkwo@inbox.com | +1-646-777-3344
+
+SUMMARY
+Software Engineer with over 9 years of professional experience. Primarily backend-focused with
+strong Python and Java skills. Note: Career included two planned breaks for personal/family reasons.
+
+WORK HISTORY
+
+Senior Backend Engineer
+FinServe Technologies, New York, NY
+March 2022 – Present
+- Building payment processing microservices handling $50M+ daily transaction volume
+- Led team of 5 engineers; introduced Kafka-based event streaming architecture
+- Python, FastAPI, Kafka, PostgreSQL, Redis, AWS, Docker, Kubernetes
+
+*** CAREER BREAK: September 2021 – February 2022 (5 months)
+Family relocation from London to New York; visa processing and settling in period.
+
+Backend Engineer
+Barclays Digital (Contractor), London, UK
+January 2019 – August 2021 (2 years 8 months)
+- Developed FX trading platform backend services in Java (Spring Boot)
+- Integrated with Bloomberg API and various FX pricing feeds
+- Java, Spring Boot, Kafka, Oracle DB, Git
+
+*** CAREER BREAK: May 2018 – December 2018 (7 months)
+Personal sabbatical — carer for ailing parent. Returned as a stronger engineer.
+
+Software Developer
+ClearMetrics Ltd., London, UK
+August 2016 – April 2018 (1 year 9 months)
+- Built ETL pipelines and analytics backend for SaaS reporting platform
+- Python, Django, Celery, PostgreSQL, AWS S3, EC2
+
+Junior Developer
+Accenture UK, London, UK
+September 2014 – July 2016 (1 year 10 months)
+- Worked on enterprise Java applications for public-sector client
+- Supported legacy Oracle Forms migration to modern web stack
+- Java, JavaScript, Oracle DB
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+University of Lagos, Nigeria
+Graduated: July 2014
+
+SKILLS
+Languages: Python, Java, JavaScript, SQL, Bash
+Frameworks: FastAPI, Django, Flask, Spring Boot
+Messaging: Apache Kafka, RabbitMQ
+Databases: PostgreSQL, Oracle, MySQL, MongoDB, Redis
+Cloud & DevOps: AWS (EC2, S3, RDS, Lambda, EKS), Docker, Kubernetes, Terraform
+Testing: pytest, JUnit, Mockito
+Tools: Git, GitHub Actions, Jenkins, JIRA, IntelliJ
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect – Professional (2023)
+- Apache Kafka for Developers – Udemy (2022)

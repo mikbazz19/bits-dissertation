@@ -1,0 +1,65 @@
+ARJUN MEHTA
+arjun.mehta@gmail.com | +91-9876543210
+LinkedIn: linkedin.com/in/arjunmehta | GitHub: github.com/arjun-mehta
+
+OBJECTIVE
+Recent Computer Science graduate seeking an entry-level Software Developer role to apply my
+academic knowledge and project experience in a professional environment.
+
+EDUCATION
+
+Bachelor of Technology in Computer Science and Engineering
+National Institute of Technology, Warangal
+Graduated: May 2024
+CGPA: 8.4 / 10.0
+
+12th (Senior Secondary) – CBSE
+Delhi Public School, New Delhi
+Year: 2020 | Percentage: 92.4%
+
+10th (Secondary) – CBSE
+Delhi Public School, New Delhi
+Year: 2018 | Percentage: 95.0%
+
+TECHNICAL SKILLS
+
+Programming Languages: C, C++, Python, Java, JavaScript
+Web Development: HTML5, CSS3, React.js (basics), Node.js (basics)
+Databases: MySQL, MongoDB (basics)
+Tools: Git, VS Code, Eclipse, IntelliJ IDEA
+Concepts: Data Structures & Algorithms, Object-Oriented Programming, DBMS, Operating Systems, Computer Networks
+
+ACADEMIC PROJECTS
+
+Resume Screening System (Final Year Project)
+- Developed an AI-based resume screening system using Python and NLP
+- Used TF-IDF and cosine similarity to rank resumes against job descriptions
+- Technologies: Python, NLTK, Scikit-learn, Flask, SQLite
+
+E-Commerce Website (3rd Year Project)
+- Built a fully functional e-commerce website with product listing, cart, and checkout
+- Implemented user authentication and admin panel
+- Technologies: Node.js, Express.js, MongoDB, HTML/CSS, Bootstrap
+
+Library Management System (2nd Year Project)
+- Designed and implemented a desktop application for library management
+- Technologies: Java, Swing, MySQL
+
+INTERNSHIPS
+
+Software Development Intern
+XYZ Technologies Pvt. Ltd., Hyderabad (Remote)
+June 2023 – August 2023 (2 months)
+- Assisted in developing REST APIs using Flask
+- Wrote unit tests for existing modules
+- Fixed bugs reported by QA team
+
+CERTIFICATIONS
+- Python for Everybody – Coursera (University of Michigan) – 2023
+- Data Structures and Algorithms – Coding Ninjas – 2022
+- AWS Cloud Practitioner Essentials – AWS Training – 2023
+
+CO-CURRICULAR ACTIVITIES
+- Participated in Smart India Hackathon 2023 (College-level finalist)
+- Member of ACM Student Chapter, NIT Warangal
+- Solved 300+ problems on LeetCode

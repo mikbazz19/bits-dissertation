@@ -27,17 +27,19 @@ def extract_email(text: str) -> Optional[str]:
 
 def extract_phone(text: str) -> Optional[str]:
     """Extract phone number from text"""
-    # Pattern for various phone formats
     phone_patterns = [
-        r'\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}',
-        r'\d{10}',
-        r'\d{3}-\d{3}-\d{4}'
+        r'\+?1?\s*[-.\s]?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}',  # +1 (312) 555-0142 / 312-555-0142
+        r'\(\d{3}\)\s*\d{3}[-.\s]\d{4}',                       # (312) 555-0142
+        r'\d{3}[-.\s]\d{3}[-.\s]\d{4}',                        # 312.555.0142 / 312 555 0142
+        r'\d{10}',                                              # 3125550142
+        r'\+\d{1,3}[-\s]\d{3,4}[-\s]\d{3,4}[-\s]\d{3,4}',   # +40-721-456-789 / +44 7911 123456
+        r'\+\d{7,15}',                                         # +40721456789 (compact international)
     ]
-    
+
     for pattern in phone_patterns:
         match = re.search(pattern, text)
         if match:
-            return match.group(0)
+            return match.group(0).strip()
     return None
 
 

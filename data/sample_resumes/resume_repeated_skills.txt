@@ -1,0 +1,21 @@
+CHRIS DUPLICATE
+chris.dup@test.com | 555-777-8888
+
+SUMMARY
+This resume intentionally lists the same skills in multiple ways to test
+the deduplication logic in the skill extractor.
+
+SKILLS
+Python, python, PYTHON, Python 3, Python3, Py
+JavaScript, javascript, JS, js, ECMAScript
+SQL, sql, SQL Server, MySQL, MySQL 8, MYSQL
+AWS, Amazon Web Services, Amazon AWS, aws
+Docker, docker, DOCKER, Docker Container
+React, ReactJS, React.js, react.js
+
+EXPERIENCE
+Developer — FakeCo (2020–Present)
+  Technologies: Python, JavaScript, SQL, AWS, Docker, React
+
+EDUCATION
+B.Sc. Computer Science — Some University (2020)

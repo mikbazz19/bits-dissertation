@@ -1,0 +1,28 @@
+Software Engineer – Backend
+DuplicateCo | Remote
+
+ABOUT THE ROLE
+This JD intentionally lists the same requirements in multiple ways to test
+the deduplication logic in the job description parser.
+
+REQUIRED SKILLS
+Python, python, PYTHON, Python 3, Python3, Py
+JavaScript, javascript, JS, js, ECMAScript
+SQL, sql, SQL Server, MySQL, MySQL 8, MYSQL
+AWS, Amazon Web Services, Amazon AWS, aws
+Docker, docker, DOCKER, Docker Container
+React, ReactJS, React.js, react.js
+
+JOB REQUIREMENTS
+- Must know Python (3+ years)
+- Proficient in python development
+- Experience with PYTHON web frameworks
+- SQL experience required
+- Must be familiar with SQL Server or MySQL
+- AWS deployment experience (Cloud: Amazon Web Services, aws)
+
+EXPERIENCE
+Minimum 2 years in a software engineering role.
+
+EDUCATION
+Bachelor's in Computer Science or equivalent.

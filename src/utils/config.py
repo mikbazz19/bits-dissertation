@@ -22,11 +22,18 @@ class Config:
     # Matching thresholds
     SKILL_MATCH_THRESHOLD = 0.6
     OVERALL_MATCH_THRESHOLD = 0.5
-    
-    # Experience weight (in years)
+
+    # Scoring weights  (must sum to 1.0)
+    SKILLS_WEIGHT = 0.6
     EXPERIENCE_WEIGHT = 0.3
-    SKILLS_WEIGHT = 0.5
-    EDUCATION_WEIGHT = 0.2
+    EDUCATION_WEIGHT = 0.1
+
+    # Decision thresholds (percentage points, post-confidence)
+    ACCEPT_THRESHOLD = 75   # >= Accept
+    REVIEW_THRESHOLD = 60   # >= Review, else Reject
+
+    # Overqualification: reject if candidate exp exceeds required by more than this
+    OVERQUALIFICATION_YEARS_BUFFER = 3
     
     @classmethod
     def ensure_directories(cls):

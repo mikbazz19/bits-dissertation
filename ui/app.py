@@ -4,6 +4,7 @@ Streamlit Web Application
 """
 
 import streamlit as st
+import re
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -376,6 +377,18 @@ def main():
                 st.write(f"- Name: {resume.name or 'Not found'}")
                 st.write(f"- Email: {resume.email or 'Not found'}")
                 st.write(f"- Phone: {resume.phone or 'Not found'}")
+                if resume.linkedin:
+                    _li_url = resume.linkedin if resume.linkedin.startswith(('http://', 'https://')) else 'https://' + resume.linkedin
+                    _li_display = re.sub(r'^https?://(www\.)?', '', _li_url).rstrip('/')
+                    st.markdown(f"- LinkedIn: [{_li_display}]({_li_url})")
+                else:
+                    st.write("- LinkedIn: Not found")
+                if resume.github:
+                    _gh_url = resume.github if resume.github.startswith(('http://', 'https://')) else 'https://' + resume.github
+                    _gh_display = re.sub(r'^https?://(www\.)?', '', _gh_url).rstrip('/')
+                    st.markdown(f"- GitHub: [{_gh_display}]({_gh_url})")
+                else:
+                    st.write("- GitHub: Not found")
                 st.write(f"- Total Experience: {resume.total_experience_years} years")
                 
                 st.write("**Skills:**")
@@ -606,8 +619,44 @@ def main():
                     
                     # Priority areas
                     st.subheader("Priority Areas")
+                    _area_meta = {
+                        "Critical Skill Gaps": {
+                            "icon": "🔴",
+                            "description": (
+                                "More than 3 required skills are missing. "
+                                "Acquiring these is essential before applying."
+                            ),
+                        },
+                        "Experience Requirement": {
+                            "icon": "🟠",
+                            "description": (
+                                "Relevant experience falls short of the job requirement by "
+                                f"more than 1 year "
+                                f"(gap: {gap_analysis['experience_gaps'].get('experience_gap_years', 0):.1f} yr(s))."
+                            ),
+                        },
+                        "Skill Development": {
+                            "icon": "🟡",
+                            "description": (
+                                "Required-skills coverage is below 70 % "
+                                f"(current: {gap_analysis['skill_gaps'].get('required_skills_coverage', 0):.0f} %). "
+                                "Upskilling in the missing areas will improve the match significantly."
+                            ),
+                        },
+                        "Minor Improvements": {
+                            "icon": "🟢",
+                            "description": (
+                                "No critical gaps found. The candidate is a strong match. "
+                                "Small refinements (preferred skills, certifications, resume wording) "
+                                "can further strengthen the application."
+                            ),
+                        },
+                    }
                     for area in gap_analysis['priority_areas']:
-                        st.write(f"- {area}")
+                        meta = _area_meta.get(area, {"icon": "⚪", "description": area})
+                        st.markdown(
+                            f"{meta['icon']} **{area}** — {meta['description']}"
+                        )
                     
             # Download report button (outside the if block so it shows after analysis is done)
             if st.session_state.get('gap_analysis'):

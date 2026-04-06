@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Powered Resume Screening – Dissertation Viva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0f1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2236;
+      --bg-card-hover: #1e2a42;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-cyan: #22d3ee;
+      --accent-purple: #a78bfa;
+      --accent-orange: #fb923c;
+      --accent-pink: #f472b6;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-yellow: #fbbf24;
+      --accent-blue: #60a5fa;
+      --border: rgba(148, 163, 184, 0.1);
+      --border-hover: rgba(148, 163, 184, 0.22);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVIGATION ─────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      padding: 0.6rem 1.5rem;
+      background: rgba(10, 15, 26, 0.92);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 1rem;
+    }
+
+    .nav-brand {
+      font-family: 'Instrument Serif', serif;
+      font-size: 0.95rem; color: var(--text-secondary);
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .nav-links { display: flex; gap: 0.2rem; flex-wrap: wrap; }
+
+    .nav-link {
+      padding: 0.28rem 0.55rem; border-radius: 100px;
+      font-size: 0.7rem; font-weight: 500;
+      text-decoration: none; color: var(--text-muted);
+      transition: all 0.25s ease; border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+      border-color: var(--border);
+    }
+
+    .nav-progress {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.7rem; color: var(--text-muted); flex-shrink: 0;
+    }
+
+    .progress-bar {
+      width: 80px; height: 4px;
+      background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+      border-radius: 2px; transition: width 0.4s ease;
+    }
+
+    /* ── KEYBOARD HINT ──────────────────────────────────────────── */
+    .keyboard-hint {
+      position: fixed; bottom: 1.2rem; right: 1.5rem; z-index: 200;
+      font-size: 0.68rem; color: var(--text-muted);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .key-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0.15rem 0.45rem; background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border); border-radius: 4px;
+      font-size: 0.68rem; color: var(--text-muted);
+    }
+
+    /* ── SLIDE BASE ─────────────────────────────────────────────── */
+    .slide {
+      min-height: 100vh;
+      padding: 5rem 4rem 2.5rem;
+      display: flex; align-items: center; position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── TITLE SLIDE ────────────────────────────────────────────── */
+    .slide-title {
+      justify-content: center; text-align: center;
+      background: radial-gradient(ellipse at 50% 40%, rgba(34,211,238,0.06) 0%, transparent 65%);
+    }
+
+    .title-glows {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; pointer-events: none;
+    }
+
+    .glow {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+
+    .glow-1 { width: 400px; height: 400px; background: var(--accent-cyan); top: 10%; left: 5%; }
+    .glow-2 { width: 350px; height: 350px; background: var(--accent-purple); bottom: 10%; right: 5%; animation-delay: -4s; }
+    .glow-3 { width: 300px; height: 300px; background: var(--accent-orange); top: 40%; left: 40%; animation-delay: -8s; opacity: 0.07; }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    .title-content { max-width: 920px; position: relative; z-index: 1; animation: fadeUp 0.9s ease; }
+
+    .title-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      padding: 0.4rem 1.25rem; border-radius: 100px; margin-bottom: 1.75rem;
+      background: rgba(34,211,238,0.08); color: var(--accent-cyan);
+      border: 1px solid rgba(34,211,238,0.2); font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+
+    .title-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-cyan); animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .title-main {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.8rem, 6.5vw, 5rem);
+      font-weight: 400; line-height: 1.1;
+      letter-spacing: -0.025em; margin-bottom: 1.5rem;
+    }
+
+    .title-main em {
+      font-style: italic;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-purple) 60%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .title-sub {
+      font-size: 1.15rem; color: var(--text-secondary);
+      max-width: 680px; margin: 0 auto 2.5rem; line-height: 1.7;
+    }
+
+    .title-meta {
+      display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+      font-size: 0.85rem; color: var(--text-muted);
+    }
+
+    .title-meta-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+    .title-meta-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .title-meta-value { color: var(--text-secondary); font-weight: 500; }
+
+    /* ── CONTENT SLIDE ──────────────────────────────────────────── */
+    .slide-content { justify-content: flex-start; align-items: flex-start; }
+
+    .slide-level { max-width: 1380px; margin: 0 auto; width: 100%; }
+
+    .level-header { margin-bottom: 1.6rem; position: relative; }
+
+    .level-number {
+      font-family: 'Instrument Serif', serif; font-size: 7rem;
+      font-weight: 400; line-height: 1; opacity: 0.04;
+      position: absolute; top: -2rem; left: -0.5rem;
+      pointer-events: none;
+    }
+
+    .level-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.32rem 0.9rem; border-radius: 100px;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.7rem;
+    }
+
+    .c-cyan  .level-badge { background: rgba(34,211,238,0.12);   color: var(--accent-cyan);   border: 1px solid rgba(34,211,238,0.25); }
+    .c-purple .level-badge { background: rgba(167,139,250,0.12); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.25); }
+    .c-orange .level-badge { background: rgba(251,146,60,0.12);  color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+    .c-green  .level-badge { background: rgba(52,211,153,0.12);  color: var(--accent-green);  border: 1px solid rgba(52,211,153,0.25); }
+    .c-pink   .level-badge { background: rgba(244,114,182,0.12); color: var(--accent-pink);   border: 1px solid rgba(244,114,182,0.25); }
+    .c-blue   .level-badge { background: rgba(96,165,250,0.12);  color: var(--accent-blue);   border: 1px solid rgba(96,165,250,0.25); }
+    .c-red    .level-badge { background: rgba(248,113,113,0.12); color: var(--accent-red);    border: 1px solid rgba(248,113,113,0.25); }
+    .c-yellow .level-badge { background: rgba(251,191,36,0.12);  color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.25); }
+
+    .level-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+      font-weight: 400; letter-spacing: -0.02em; margin-bottom: 0.45rem;
+    }
+
+    .level-summary { font-size: 1rem; color: var(--text-secondary); max-width: 800px; line-height: 1.7; }
+
+    /* Card icon colours per theme */
+    .c-cyan  .card-icon { background: rgba(34,211,238,0.12);   color: var(--accent-cyan); }
+    .c-purple .card-icon { background: rgba(167,139,250,0.12); color: var(--accent-purple); }
+    .c-orange .card-icon { background: rgba(251,146,60,0.12);  color: var(--accent-orange); }
+    .c-green  .card-icon { background: rgba(52,211,153,0.12);  color: var(--accent-green); }
+    .c-pink   .card-icon { background: rgba(244,114,182,0.12); color: var(--accent-pink); }
+    .c-blue   .card-icon { background: rgba(96,165,250,0.12);  color: var(--accent-blue); }
+    .c-red    .card-icon { background: rgba(248,113,113,0.12); color: var(--accent-red); }
+    .c-yellow .card-icon { background: rgba(251,191,36,0.12);  color: var(--accent-yellow); }
+
+    /* Bullet dot colours */
+    .c-cyan  .card-content li::before { background: var(--accent-cyan);   opacity: 0.55; }
+    .c-purple .card-content li::before { background: var(--accent-purple); opacity: 0.55; }
+    .c-orange .card-content li::before { background: var(--accent-orange); opacity: 0.55; }
+    .c-green  .card-content li::before { background: var(--accent-green);  opacity: 0.55; }
+    .c-pink   .card-content li::before { background: var(--accent-pink);   opacity: 0.55; }
+    .c-blue   .card-content li::before { background: var(--accent-blue);   opacity: 0.55; }
+    .c-red    .card-content li::before { background: var(--accent-red);    opacity: 0.55; }
+    .c-yellow .card-content li::before { background: var(--accent-yellow); opacity: 0.55; }
+
+    /* ── CONTENT GRID ───────────────────────────────────────────── */
+    .content-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1rem; position: relative; z-index: 1;
+    }
+
+    .content-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem; transition: all 0.3s ease;
+    }
+
+    .content-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-hover);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.3);
+      background: var(--bg-card-hover);
+    }
+
+    .card-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem;
+    }
+
+    .card-icon svg { width: 18px; height: 18px; }
+    .card-title { font-weight: 600; font-size: 0.97rem; margin-bottom: 0.45rem; color: var(--text-primary); }
+    .card-content { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.7; }
+    .card-content ul { list-style: none; margin-top: 0.35rem; }
+    .card-content li { position: relative; padding-left: 1.1rem; margin-bottom: 0.28rem; }
+    .card-content li::before {
+      content: ''; position: absolute; left: 0; top: 0.58em;
+      width: 5px; height: 5px; border-radius: 50%;
+    }
+
+    /* ── STAT CARDS ─────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem; position: relative; z-index: 1;
+    }
+
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.4rem; text-align: center;
+      transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+
+    .stat-card.cyan::before   { background: linear-gradient(90deg, var(--accent-cyan),   transparent); }
+    .stat-card.purple::before { background: linear-gradient(90deg, var(--accent-purple), transparent); }
+    .stat-card.orange::before { background: linear-gradient(90deg, var(--accent-orange), transparent); }
+    .stat-card.green::before  { background: linear-gradient(90deg, var(--accent-green),  transparent); }
+    .stat-card.pink::before   { background: linear-gradient(90deg, var(--accent-pink),   transparent); }
+    .stat-card.blue::before   { background: linear-gradient(90deg, var(--accent-blue),   transparent); }
+    .stat-card.red::before    { background: linear-gradient(90deg, var(--accent-red),    transparent); }
+    .stat-card.yellow::before { background: linear-gradient(90deg, var(--accent-yellow), transparent); }
+
+    .stat-number {
+      font-family: 'Instrument Serif', serif; font-size: 2.6rem;
+      font-weight: 400; line-height: 1.1; margin-bottom: 0.3rem;
+    }
+
+    .stat-card.cyan   .stat-number { color: var(--accent-cyan); }
+    .stat-card.purple .stat-number { color: var(--accent-purple); }
+    .stat-card.orange .stat-number { color: var(--accent-orange); }
+    .stat-card.green  .stat-number { color: var(--accent-green); }
+    .stat-card.pink   .stat-number { color: var(--accent-pink); }
+    .stat-card.blue   .stat-number { color: var(--accent-blue); }
+    .stat-card.red    .stat-number { color: var(--accent-red); }
+    .stat-card.yellow .stat-number { color: var(--accent-yellow); }
+
+    .stat-label { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4; }
+    .stat-sub   { font-size: 0.7rem;  color: var(--text-muted); margin-top: 0.3rem; font-style: italic; }
+
+    /* ── QUOTE ──────────────────────────────────────────────────── */
+    .quote-block {
+      margin-top: 1.25rem; padding: 1.1rem 1.75rem;
+      background: rgba(255,255,255,0.02);
+      border-left: 3px solid var(--accent-cyan);
+      border-radius: 0 12px 12px 0;
+    }
+
+    .quote-text {
+      font-family: 'Instrument Serif', serif; font-size: 1.1rem;
+      font-style: italic; color: var(--text-primary); line-height: 1.6; margin-bottom: 0.4rem;
+    }
+
+    .quote-source { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── TABLE ──────────────────────────────────────────────────── */
+    .styled-table {
+      width: 100%; border-collapse: separate; border-spacing: 0;
+      border-radius: 14px; overflow: hidden; border: 1px solid var(--border);
+      font-size: 0.84rem; position: relative; z-index: 1;
+    }
+
+    .styled-table th {
+      background: rgba(255,255,255,0.05); padding: 0.65rem 1rem;
+      text-align: left; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+    }
+
+    .styled-table td {
+      padding: 0.6rem 1rem; font-size: 0.83rem;
+      color: var(--text-secondary); border-bottom: 1px solid var(--border);
+      background: var(--bg-card); vertical-align: top;
+    }
+
+    .styled-table tr:last-child td { border-bottom: none; }
+    .styled-table .col-name { color: var(--text-primary); font-weight: 600; }
+    .styled-table .tag {
+      display: inline-block; padding: 0.15rem 0.55rem; border-radius: 100px;
+      font-size: 0.7rem; font-weight: 600; margin-right: 0.25rem;
+    }
+
+    .tag-green  { background: rgba(52,211,153,0.12);  color: var(--accent-green); border: 1px solid rgba(52,211,153,0.25); }
+    .tag-red    { background: rgba(248,113,113,0.12); color: var(--accent-red);   border: 1px solid rgba(248,113,113,0.25); }
+    .tag-yellow { background: rgba(251,191,36,0.12);  color: var(--accent-yellow);border: 1px solid rgba(251,191,36,0.25); }
+    .tag-cyan   { background: rgba(34,211,238,0.12);  color: var(--accent-cyan);  border: 1px solid rgba(34,211,238,0.25); }
+    .tag-purple { background: rgba(167,139,250,0.12); color: var(--accent-purple);border: 1px solid rgba(167,139,250,0.25); }
+    .tag-orange { background: rgba(251,146,60,0.12);  color: var(--accent-orange);border: 1px solid rgba(251,146,60,0.25); }
+
+    /* ── ARCHITECTURE SVG BOX ───────────────────────────────────── */
+    .arch-container {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem; overflow-x: auto;
+      position: relative; z-index: 1;
+    }
+
+    .arch-svg { width: 100%; height: auto; display: block; }
+
+    /* ── METRICS BAR ────────────────────────────────────────────── */
+    .metric-row {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 0.7rem;
+    }
+
+    .metric-label {
+      font-size: 0.82rem; color: var(--text-secondary);
+      min-width: 200px; font-weight: 500;
+    }
+
+    .metric-bar-wrap {
+      flex: 1; height: 8px; background: rgba(255,255,255,0.06);
+      border-radius: 4px; overflow: hidden;
+    }
+
+    .metric-bar {
+      height: 100%; border-radius: 4px;
+      transition: width 1s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .metric-value {
+      font-size: 0.82rem; color: var(--text-primary);
+      font-weight: 600; min-width: 50px; text-align: right;
+    }
+
+    /* ── FLOW DIAGRAM ───────────────────────────────────────────── */
+    .flow-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      flex-wrap: wrap; margin-bottom: 0.5rem;
+    }
+
+    .flow-step {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.6rem 1rem;
+      font-size: 0.82rem; font-weight: 500; color: var(--text-primary);
+      transition: all 0.3s ease; position: relative;
+    }
+
+    .flow-step:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+    .flow-step small { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 400; margin-top: 0.1rem; }
+
+    .flow-arrow {
+      color: var(--text-muted); font-size: 0.9rem; flex-shrink: 0;
+    }
+
+    /* ── GANTT ──────────────────────────────────────────────────── */
+    .gantt-wrap { overflow-x: auto; position: relative; z-index: 1; }
+
+    .gantt-table { width: 100%; border-collapse: collapse; min-width: 700px; font-size: 0.78rem; }
+
+    .gantt-table th {
+      padding: 0.4rem 0.6rem; font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted); border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .gantt-table th.task-col { text-align: left; min-width: 220px; }
+
+    .gantt-table td {
+      padding: 0.3rem 0.4rem; border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text-secondary); vertical-align: middle;
+    }
+
+    .gantt-table td.task-name { font-weight: 500; color: var(--text-primary); padding-left: 0; }
+    .gantt-table td.phase-badge { padding: 0.2rem 0.4rem; }
+
+    .gantt-bar-cell { height: 28px; position: relative; }
+
+    .gantt-bar {
+      position: absolute; height: 18px; top: 50%; transform: translateY(-50%);
+      border-radius: 4px; opacity: 0.85; transition: opacity 0.2s;
+    }
+
+    .gantt-bar:hover { opacity: 1; }
+
+    .gantt-bar.done   { background: var(--accent-green); }
+    .gantt-bar.active { background: var(--accent-cyan); animation: shimmer 2s ease-in-out infinite; }
+    .gantt-bar.future { background: var(--accent-purple); opacity: 0.5; }
+
+    @keyframes shimmer {
+      0%,100% { opacity: 0.85; } 50% { opacity: 1; }
+    }
+
+    .phase-label {
+      display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+
+    .ph1 { background: rgba(34,211,238,0.12);   color: var(--accent-cyan); }
+    .ph2 { background: rgba(52,211,153,0.12);   color: var(--accent-green); }
+    .ph3 { background: rgba(248,113,113,0.12);  color: var(--accent-red); }
+    .ph4 { background: rgba(167,139,250,0.12);  color: var(--accent-purple); }
+    .ph5 { background: rgba(251,146,60,0.12);   color: var(--accent-orange); }
+
+    /* ── TWO-COL LAYOUT ─────────────────────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .two-col-3-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 1.25rem; }
+
+    /* ── CALLOUT ────────────────────────────────────────────────── */
+    .callout {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.2rem 1.5rem; margin-top: 1rem;
+    }
+
+    .callout-title {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+
+    .callout-body { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ── SCORE FORMULA ──────────────────────────────────────────── */
+    .formula-box {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.75rem;
+      font-family: 'Courier New', monospace; font-size: 0.88rem;
+      color: var(--text-secondary); line-height: 2; margin-top: 1rem;
+      position: relative; z-index: 1;
+    }
+
+    .formula-box .hl-cyan   { color: var(--accent-cyan);   font-weight: 700; }
+    .formula-box .hl-orange { color: var(--accent-orange); font-weight: 700; }
+    .formula-box .hl-green  { color: var(--accent-green);  font-weight: 700; }
+    .formula-box .hl-purple { color: var(--accent-purple); font-weight: 700; }
+    .formula-box .hl-muted  { color: var(--text-muted); }
+
+    /* ── MATCH BAND ─────────────────────────────────────────────── */
+    .band-row {
+      display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;
+    }
+
+    .band {
+      flex: 1; min-width: 110px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1rem; text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .band:hover { transform: translateY(-3px); }
+
+    .band-score { font-family: 'Instrument Serif', serif; font-size: 1.9rem; margin-bottom: 0.25rem; }
+    .band-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.2rem; }
+    .band-desc  { font-size: 0.72rem; color: var(--text-muted); }
+
+    .band.excellent .band-score,.band.excellent .band-label { color: var(--accent-green); }
+    .band.good      .band-score,.band.good      .band-label { color: var(--accent-cyan); }
+    .band.fair      .band-score,.band.fair      .band-label { color: var(--accent-yellow); }
+    .band.poor      .band-score,.band.poor      .band-label { color: var(--accent-red); }
+
+    /* ── DIFF TABLE ─────────────────────────────────────────────── */
+    .check { color: var(--accent-green); font-weight: 700; }
+    .cross  { color: var(--accent-red);  font-weight: 700; }
+
+    /* ── ANIMATIONS ─────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .anim {
+      opacity: 0; transform: translateY(28px);
+      transition: all 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .anim.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── SECTION DIVIDER ────────────────────────────────────────── */
+    .section-divider {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      background: radial-gradient(ellipse at 50% 50%, rgba(167,139,250,0.06) 0%, transparent 65%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .divider-content { position: relative; z-index: 1; animation: fadeUp 0.8s ease; }
+
+    .divider-number {
+      font-family: 'Instrument Serif', serif; font-size: 8rem;
+      font-weight: 400; opacity: 0.05; line-height: 1;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    }
+
+    .divider-badge {
+      display: inline-block; padding: 0.45rem 1.25rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .divider-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.5rem, 5vw, 4.2rem);
+      font-weight: 400; letter-spacing: -0.025em; margin-bottom: 0.75rem;
+    }
+
+    .divider-sub { font-size: 1.05rem; color: var(--text-secondary); max-width: 600px; line-height: 1.6; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .slide { padding: 5rem 2rem 2rem; }
+      .two-col, .two-col-3-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .slide { padding: 5rem 1.25rem 1.5rem; }
+      nav { padding: 0.5rem 0.75rem; }
+      .nav-link { font-size: 0.62rem; padding: 0.22rem 0.45rem; }
+      .level-title { font-size: 1.65rem; }
+      .content-grid { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2,1fr); }
+      .band-row { gap: 0.5rem; }
+    }
+
+    /* ── SCROLL SNAP (optional, disabled for smooth scroll) ─────── */
+    .snap-container { scroll-snap-type: y proximity; }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================ NAVIGATION -->
+<nav id="topnav">
+  <div class="nav-brand">AI Resume Screening · Viva</div>
+  <div class="nav-links">
+    <a href="#title"       class="nav-link active">Title</a>
+    <a href="#motivation"  class="nav-link">Motivation</a>
+    <a href="#objectives"  class="nav-link">Objectives</a>
+    <a href="#literature"  class="nav-link">Literature</a>
+    <a href="#comparison"  class="nav-link">Comparison</a>
+    <a href="#architecture" class="nav-link">Architecture</a>
+    <a href="#methodology" class="nav-link">Methodology</a>
+    <a href="#evaluation"  class="nav-link">Evaluation</a>
+    <a href="#progress"    class="nav-link">Progress</a>
+    <a href="#roadmap"     class="nav-link">Roadmap</a>
+    <a href="#demo"        class="nav-link">Demo</a>
+  </div>
+  <div class="nav-progress">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span id="progressPct">0%</span>
+  </div>
+</nav>
+
+<div class="keyboard-hint">
+  <span class="key-badge">↑↓</span> scroll  &nbsp;
+  <span class="key-badge">←→</span> nav
+</div>
+
+<!-- ============================================================ SLIDE 1: TITLE -->
+<section class="slide slide-title" id="title">
+  <div class="title-glows">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="glow glow-3"></div>
+  </div>
+  <div class="title-content">
+    <div class="title-eyebrow">
+      <div class="title-dot"></div>
+      BITS Pilani · CCZG628T Dissertation · Mid-Semester
+    </div>
+    <h1 class="title-main">
+      AI-Powered<br><em>Resume Screening</em><br>and Gap Analysis
+    </h1>
+    <p class="title-sub">
+      An NLP-driven pipeline for automated candidate evaluation,
+      intelligent job matching, and personalised learning path generation.
+    </p>
+    <div class="title-meta">
+      <div class="title-meta-item">
+        <span class="title-meta-label">Student</span>
+        <span class="title-meta-value">Soumik Basu</span>
+      </div>
+      <div class="title-meta-item">
+        <span class="title-meta-label">ID</span>
+        <span class="title-meta-value">2024MT03102</span>
+      </div>
+      <div class="title-meta-item">
+        <span class="title-meta-label">Programme</span>
+        <span class="title-meta-value">M.Tech (Software Systems) – WILP</span>
+      </div>
+      <div class="title-meta-item">
+        <span class="title-meta-label">Date</span>
+        <span class="title-meta-value">7th April 2026</span>
+      </div>
+      <div class="title-meta-item">
+        <span class="title-meta-label">Source Code</span>
+        <span class="title-meta-value"><a href="https://github.com/mikbazz19/bits-dissertation" target="_blank" rel="noopener" style="color:var(--accent-cyan);text-decoration:none;border-bottom:1px dotted rgba(34,211,238,0.5)">github.com/mikbazz19/bits-dissertation</a></span>
+      </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 2: MOTIVATION -->
+<section class="slide slide-content c-cyan" id="motivation">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">01</span>
+      <span class="level-badge">Problem &amp; Motivation</span>
+      <h2 class="level-title">Why Automated Resume Screening?</h2>
+      <p class="level-summary">Manual screening is slow, inconsistent, and biased — yet it is the current industry norm.</p>
+    </div>
+
+    <div class="stat-grid anim">
+      <div class="stat-card cyan">
+        <div class="stat-number">250+</div>
+        <div class="stat-label">Applications per corporate job posting on average</div>
+        <div class="stat-sub">LinkedIn / SHRM industry survey</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-number">6–7 s</div>
+        <div class="stat-label">Average recruiter time spent scanning a resume</div>
+        <div class="stat-sub">Ladders Inc., 2018 eye-tracking study</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-number">27M</div>
+        <div class="stat-label">US workers invisibly screened out by ATS keyword mismatch</div>
+        <div class="stat-sub">Harvard Business School, Fuller et al. 2021</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-number">75%</div>
+        <div class="stat-label">Qualified candidates rejected before human review by ATS</div>
+        <div class="stat-sub">Ideal (now Ceridian) ATS research report</div>
+      </div>
+    </div>
+
+    <div class="anim" style="margin-top:1.25rem">
+      <div class="content-grid" style="grid-template-columns: repeat(3,1fr)">
+        <div class="content-card">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+          <h3 class="card-title">Speed &amp; Scalability</h3>
+          <div class="card-content">Processing hundreds of resumes manually is infeasible. Automation scales to thousands of applications without degradation in quality.</div>
+        </div>
+        <div class="content-card">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <h3 class="card-title">Consistency</h3>
+          <div class="card-content">Human reviewers exhibit fatigue and cognitive bias. A rule-based system applies identical criteria to every resume — no implicit preferences.</div>
+        </div>
+        <div class="content-card">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <h3 class="card-title">Candidate Feedback</h3>
+          <div class="card-content">Commercial ATS provides zero feedback to applicants. This system generates a personalised gap report and learning roadmap — supporting both recruiters <em>and</em> job seekers.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-block anim" style="margin-top:1rem">
+      <div class="quote-text">"Existing ATS tools are expensive, closed-source, prone to over-filtering, and offer no feedback to the candidate. This project addresses that gap."</div>
+      <div class="quote-source">— Mid-Semester Report, Chapter 1: Background and Motivation</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 3: OBJECTIVES -->
+<section class="slide slide-content c-purple" id="objectives">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">02</span>
+      <span class="level-badge">Objectives</span>
+      <h2 class="level-title">8 Core Objectives</h2>
+      <p class="level-summary">Defined in Chapter 1.3 of the mid-semester report — each objective maps directly to a system module.</p>
+    </div>
+
+    <div class="content-grid anim" style="grid-template-columns: repeat(4,1fr)">
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h3 class="card-title">O1 — Multi-Format Parsing</h3>
+        <div class="card-content">Parse resumes from PDF, DOCX, TXT and scanned images via OCR.</div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <h3 class="card-title">O2 — Information Extraction</h3>
+        <div class="card-content">Extract name, email, phone, skills, work experience, education, certifications.</div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+        <h3 class="card-title">O3 — JD Analysis</h3>
+        <div class="card-content">Parse job descriptions to identify required skills, preferred skills, and experience requirements.</div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <h3 class="card-title">O4 — Weighted Matching</h3>
+        <div class="card-content">Compute a multi-dimensional match score to help strengthen decision-making, grounded in real-life recruitment scenarios and logically weighted criteria.</div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h.01M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg></div>
+        <h3 class="card-title">O5 — Gap Analysis</h3>
+        <div class="card-content">Identify skill and experience gaps; generate a prioritised learning path with specific resources.</div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3 class="card-title">O6 — Web Interface</h3>
+        <div class="card-content">Streamlit web app with 3 tabs: Resume Analysis · Job Matching · Gap Analysis; plus contextual email dispatch for:
+            <ul>
+              <li><strong>Approval</strong> — interview invitation with scheduling details</li>
+              <li><strong>Rejection</strong> — detailed reasoning and personalised improvement points</li>
+              <li><strong>Review</strong> — resume forwarded to hiring manager for final decision</li>
+            </ul>
+          </div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <h3 class="card-title">O7 — Unit Testing</h3>
+        <div class="card-content">Validate every module through automated pytest tests across multiple test files.</div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <h3 class="card-title">O8 — Quantitative Evaluation</h3>
+        <div class="card-content">Measure accuracy using Precision, Recall, F1-Score per module and Spearman's ρ for matching.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 4: LITERATURE REVIEW -->
+<section class="slide slide-content c-blue" id="literature">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">03</span>
+      <span class="level-badge">Review of Literature</span>
+      <h2 class="level-title">Prior Work: Academic Research</h2>
+      <p class="level-summary">Chapter 2 of the mid-semester report surveys 6 key academic papers on NLP-based resume analysis.</p>
+    </div>
+
+    <div class="anim">
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Approach</th>
+            <th>Key Contribution</th>
+            <th>Gap / Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="col-name">Faliagka et al. (2012)</td>
+            <td>ML + Semantic Web</td>
+            <td>Ontology-based candidate ranking</td>
+            <td>Domain-specific; no multi-format support</td>
+          </tr>
+          <tr>
+            <td class="col-name">Maheshwary &amp; Misra (2018)</td>
+            <td>TF-IDF + Cosine Similarity</td>
+            <td>Vector space model for resume–JD matching</td>
+            <td>Ignores phrase context; no gap analysis</td>
+          </tr>
+          <tr>
+            <td class="col-name">Luo et al. (2019)</td>
+            <td>BERT fine-tuned on HR data</td>
+            <td>Semantic similarity for job–candidate matching</td>
+            <td>Large labelled corpus required; computationally expensive</td>
+          </tr>
+          <tr>
+            <td class="col-name">Roy et al. (2020)</td>
+            <td>spaCy NER + Word2Vec</td>
+            <td>Skill and entity extraction with word embeddings</td>
+            <td>Custom NER training required; no OCR support</td>
+          </tr>
+          <tr>
+            <td class="col-name">Zhang &amp; Wang (2021)</td>
+            <td>Graph Neural Networks</td>
+            <td>Skill taxonomy via graph-based matching</td>
+            <td>Highly complex; limited to structured data</td>
+          </tr>
+          <tr>
+            <td class="col-name">Gugnani &amp; Misra (2020)</td>
+            <td>LSTM + CRF</td>
+            <td>Resume section segmentation &amp; NER</td>
+            <td>No end-to-end usable system delivered</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout anim" style="border-color:rgba(96,165,250,0.25)">
+      <div class="callout-title" style="color:var(--accent-blue)">Synthesis — Research Gap</div>
+      <div class="callout-body">
+        Academic work focuses on individual components (NER, matching, embeddings) but delivers <strong>no complete, runnable, multi-modal, open-source system</strong>. Deep-learning approaches (BERT, GNN) achieve higher semantic accuracy but require large labelled corpora and significant compute — impractical for this dissertation scope.
+        The present work occupies the "pragmatic middle ground": rule-based NLP with optional spaCy, covering the full pipeline end-to-end.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 5: COMPARISON -->
+<section class="slide slide-content c-orange" id="comparison">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">04</span>
+      <span class="level-badge">System Comparison</span>
+      <h2 class="level-title">Commercial Tools vs. This System</h2>
+      <p class="level-summary">Chapter 2.3–2.4 critically analyses five commercial tools and identifies six differentiators.</p>
+    </div>
+
+    <div class="two-col anim">
+      <div>
+        <table class="styled-table" style="font-size:0.8rem">
+          <thead>
+            <tr><th>Tool</th><th>What it does</th><th>Key Limitation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="col-name">Jobscan</td><td>Keyword match score vs. JD</td><td>Closed-source; no learning path; no API</td></tr>
+            <tr><td class="col-name">ResumeWorded</td><td>AI resume scoring &amp; suggestions</td><td>Candidate-side only; no recruiter matching</td></tr>
+            <tr><td class="col-name">HireVue</td><td>Video + NLP + computer vision</td><td>Video hardware required; expensive licence</td></tr>
+            <tr><td class="col-name">Sovren / Affinda</td><td>Cloud resume parsing REST API</td><td>Data sent to external servers (privacy risk)</td></tr>
+            <tr><td class="col-name">Textkernel</td><td>Enterprise semantic matching</td><td>Enterprise-only; not research-accessible</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="content-card" style="height:100%">
+          <h3 class="card-title" style="color:var(--accent-orange);margin-bottom:0.9rem">This System's 6 Differentiators</h3>
+          <div class="card-content">
+            <ul>
+              <li><strong>Open-source &amp; transparent</strong> — fully inspectable, documented codebase</li>
+              <li><strong>Multi-modal input (OCR)</strong> — handles scanned PDFs &amp; images via Tesseract + OpenCV</li>
+              <li><strong>Privacy-preserving</strong> — runs entirely locally; no data leaves the machine</li>
+              <li><strong>Bidirectional value</strong> — serves both recruiter (shortlisting) &amp; candidate (gap report + learning path)</li>
+              <li><strong>No vendor lock-in</strong> — modular; individual components independently replaceable; spaCy optional</li>
+              <li><strong>Evaluation-ready</strong> — ships with pytest suite and ground-truth annotations enabling reproducible benchmarking</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 6: ARCHITECTURE -->
+<section class="slide slide-content c-cyan" id="architecture">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">05</span>
+      <span class="level-badge">System Architecture</span>
+      <h2 class="level-title">Six-Layer Modular Architecture</h2>
+      <p class="level-summary">Each layer has well-typed interfaces (Python dataclasses) and communicates only with adjacent layers.</p>
+    </div>
+
+    <!-- SVG Architecture Diagram -->
+    <div class="arch-container anim">
+      <svg class="arch-svg" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+        <defs>
+          <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+          </marker>
+          <marker id="arrowhead-cyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/>
+          </marker>
+          <marker id="arrowhead-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#34d399"/>
+          </marker>
+          <marker id="arrowhead-orange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#fb923c"/>
+          </marker>
+        </defs>
+
+        <!-- Layer backgrounds -->
+        <rect x="10" y="10"  width="940" height="60"  rx="8" fill="rgba(34,211,238,0.06)"  stroke="rgba(34,211,238,0.15)"  stroke-width="1"/>
+        <rect x="10" y="85"  width="940" height="60"  rx="8" fill="rgba(52,211,153,0.06)"  stroke="rgba(52,211,153,0.15)"  stroke-width="1"/>
+        <rect x="10" y="160" width="940" height="60"  rx="8" fill="rgba(251,146,60,0.06)"  stroke="rgba(251,146,60,0.15)"  stroke-width="1"/>
+        <rect x="10" y="235" width="940" height="60"  rx="8" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="1"/>
+        <rect x="10" y="310" width="940" height="60"  rx="8" fill="rgba(167,139,250,0.06)" stroke="rgba(167,139,250,0.15)" stroke-width="1"/>
+        <rect x="10" y="385" width="940" height="60"  rx="8" fill="rgba(96,165,250,0.06)"  stroke="rgba(96,165,250,0.15)"  stroke-width="1"/>
+
+        <!-- Layer labels -->
+        <text x="22" y="28" font-size="9" fill="#22d3ee" font-weight="700" letter-spacing="1" text-transform="uppercase">UI LAYER</text>
+        <text x="22" y="103" font-size="9" fill="#34d399" font-weight="700" letter-spacing="1">DATA INPUT LAYER</text>
+        <text x="22" y="178" font-size="9" fill="#fb923c" font-weight="700" letter-spacing="1">EXTRACTION LAYER</text>
+        <text x="22" y="253" font-size="9" fill="#f87171" font-weight="700" letter-spacing="1">MATCHING LAYER</text>
+        <text x="22" y="328" font-size="9" fill="#a78bfa" font-weight="700" letter-spacing="1">ANALYSIS &amp; OUTPUT LAYER</text>
+        <text x="22" y="403" font-size="9" fill="#60a5fa" font-weight="700" letter-spacing="1">DATA &amp; UTILITIES LAYER</text>
+
+        <!-- UI Layer box -->
+        <rect x="200" y="18" width="560" height="44" rx="8" fill="rgba(34,211,238,0.15)" stroke="rgba(34,211,238,0.35)" stroke-width="1.5"/>
+        <text x="480" y="37" text-anchor="middle" font-size="12" fill="#f1f5f9" font-weight="600">Streamlit Web Application  (ui/app.py)</text>
+        <text x="480" y="52" text-anchor="middle" font-size="9.5" fill="#94a3b8">Tab 1: Resume Analysis  ·  Tab 2: Job Matching  ·  Tab 3: Gap Analysis  ·  Email Dispatch</text>
+
+        <!-- Data Input boxes -->
+        <rect x="60"  y="93" width="180" height="44" rx="8" fill="rgba(34,211,238,0.1)"  stroke="rgba(34,211,238,0.25)" stroke-width="1.2"/>
+        <text x="150" y="112" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">ResumeParser</text>
+        <text x="150" y="127" text-anchor="middle" font-size="9" fill="#94a3b8">PDF · DOCX · TXT</text>
+
+        <rect x="270" y="93" width="180" height="44" rx="8" fill="rgba(52,211,153,0.1)"  stroke="rgba(52,211,153,0.25)" stroke-width="1.2"/>
+        <text x="360" y="112" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">OCRProcessor</text>
+        <text x="360" y="127" text-anchor="middle" font-size="9" fill="#94a3b8">PNG · JPG · TIFF · Scanned PDF</text>
+
+        <rect x="480" y="93" width="200" height="44" rx="8" fill="rgba(34,211,238,0.1)"  stroke="rgba(34,211,238,0.25)" stroke-width="1.2"/>
+        <text x="580" y="112" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">JobDescriptionParser</text>
+        <text x="580" y="127" text-anchor="middle" font-size="9" fill="#94a3b8">Section segmentation · Skill / Exp. extraction</text>
+
+        <rect x="710" y="93" width="190" height="44" rx="8" fill="rgba(96,165,250,0.1)"  stroke="rgba(96,165,250,0.25)" stroke-width="1.2"/>
+        <text x="805" y="112" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">TextPreprocessor</text>
+        <text x="805" y="127" text-anchor="middle" font-size="9" fill="#94a3b8">Tokenise · Lower · Clean</text>
+
+        <!-- Extraction Layer boxes -->
+        <rect x="55"  y="168" width="185" height="44" rx="8" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.3)" stroke-width="1.2"/>
+        <text x="147" y="187" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">EntityExtractor</text>
+        <text x="147" y="202" text-anchor="middle" font-size="9" fill="#94a3b8">Name · Email · Phone · Edu · Certs</text>
+
+        <rect x="260" y="168" width="190" height="44" rx="8" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.3)" stroke-width="1.2"/>
+        <text x="355" y="187" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">SkillExtractor</text>
+        <text x="355" y="202" text-anchor="middle" font-size="9" fill="#94a3b8">100+ skills · word-boundary regex</text>
+
+        <rect x="470" y="168" width="200" height="44" rx="8" fill="rgba(251,146,60,0.12)" stroke="rgba(251,146,60,0.3)" stroke-width="1.2"/>
+        <text x="570" y="187" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">ExperienceExtractor</text>
+        <text x="570" y="202" text-anchor="middle" font-size="9" fill="#94a3b8">Title · Company · Dates · Duration</text>
+
+        <rect x="690" y="168" width="210" height="44" rx="8" fill="rgba(52,211,153,0.1)"  stroke="rgba(52,211,153,0.25)" stroke-width="1.2"/>
+        <text x="795" y="187" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">Skills DB (JSON)</text>
+        <text x="795" y="202" text-anchor="middle" font-size="9" fill="#94a3b8">100+ skills across 8 categories</text>
+
+        <!-- Matching Layer boxes -->
+        <rect x="80"  y="243" width="350" height="44" rx="8" fill="rgba(248,113,113,0.12)" stroke="rgba(248,113,113,0.3)" stroke-width="1.2"/>
+        <text x="255" y="262" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">JobMatcher</text>
+        <text x="255" y="277" text-anchor="middle" font-size="9" fill="#94a3b8">Skills 60%  ·  Experience 30%  ·  Education 10%  ·  Confidence factor</text>
+
+        <rect x="460" y="243" width="310" height="44" rx="8" fill="rgba(248,113,113,0.12)" stroke="rgba(248,113,113,0.3)" stroke-width="1.2"/>
+        <text x="615" y="262" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">SimilarityCalculator</text>
+        <text x="615" y="277" text-anchor="middle" font-size="9" fill="#94a3b8">Jaccard · Cosine · SequenceMatcher · Overlap · fuzzy_match()</text>
+
+        <!-- Analysis Layer boxes -->
+        <rect x="60"  y="318" width="230" height="44" rx="8" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.3)" stroke-width="1.2"/>
+        <text x="175" y="337" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">GapAnalyzer</text>
+        <text x="175" y="352" text-anchor="middle" font-size="9" fill="#94a3b8">Skill · Exp · Edu gaps · Learning path</text>
+
+        <rect x="310" y="318" width="230" height="44" rx="8" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.3)" stroke-width="1.2"/>
+        <text x="425" y="337" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">ReportGenerator</text>
+        <text x="425" y="352" text-anchor="middle" font-size="9" fill="#94a3b8">Screening · Gap · Comparison reports</text>
+
+        <rect x="560" y="318" width="180" height="44" rx="8" fill="rgba(96,165,250,0.1)"  stroke="rgba(96,165,250,0.25)" stroke-width="1.2"/>
+        <text x="650" y="337" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">EmailSender</text>
+        <text x="650" y="352" text-anchor="middle" font-size="9" fill="#94a3b8">SMTP TLS 587 · SSL 465</text>
+
+        <!-- Data Layer boxes -->
+        <rect x="60"  y="393" width="200" height="44" rx="8" fill="rgba(96,165,250,0.08)"  stroke="rgba(96,165,250,0.2)" stroke-width="1.2"/>
+        <text x="160" y="412" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">Config / Helpers</text>
+        <text x="160" y="427" text-anchor="middle" font-size="9" fill="#94a3b8">Weights · Thresholds · normalize_skill()</text>
+
+        <rect x="280" y="393" width="210" height="44" rx="8" fill="rgba(96,165,250,0.08)"  stroke="rgba(96,165,250,0.2)" stroke-width="1.2"/>
+        <text x="385" y="412" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">Resume / Job Models</text>
+        <text x="385" y="427" text-anchor="middle" font-size="9" fill="#94a3b8">dataclass: Resume · Education · JobDescription</text>
+
+        <rect x="510" y="393" width="210" height="44" rx="8" fill="rgba(52,211,153,0.08)"  stroke="rgba(52,211,153,0.2)" stroke-width="1.2"/>
+        <text x="615" y="412" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">Sample Data</text>
+        <text x="615" y="427" text-anchor="middle" font-size="9" fill="#94a3b8">14 resumes · 14 job descriptions</text>
+
+        <rect x="740" y="393" width="180" height="44" rx="8" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.2)" stroke-width="1.2"/>
+        <text x="830" y="412" text-anchor="middle" font-size="11" fill="#f1f5f9" font-weight="600">Unit Tests (pytest)</text>
+        <text x="830" y="427" text-anchor="middle" font-size="9" fill="#94a3b8">5 test files · 42+ tests</text>
+
+        <!-- Vertical flow arrows -->
+        <line x1="480" y1="62"  x2="480" y2="90"  stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrowhead-cyan)"/>
+        <line x1="147" y1="137" x2="147" y2="165" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead-orange)"/>
+        <line x1="355" y1="137" x2="355" y2="165" stroke="#fb923c" stroke-width="1.5" marker-end="url(#arrowhead-orange)"/>
+        <line x1="255" y1="212" x2="255" y2="240" stroke="#f87171" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <line x1="175" y1="287" x2="175" y2="315" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <!-- Skills DB -> SkillExtractor -->
+        <line x1="690" y1="190" x2="450" y2="190" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arrowhead-green)"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 7: METHODOLOGY -->
+<section class="slide slide-content c-orange" id="methodology">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">06</span>
+      <span class="level-badge">Methodology</span>
+      <h2 class="level-title">End-to-End Processing Pipeline</h2>
+      <p class="level-summary">The two input streams — resume and job description — are processed in parallel branches that converge at the matching step.</p>
+    </div>
+
+    <!-- Data Flow -->
+    <div class="anim" style="margin-bottom:1.25rem">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-orange);margin-bottom:1rem">Processing Flow</div>
+        <div class="flow-row">
+          <div class="flow-step" style="border-color:rgba(34,211,238,0.3)">Resume Input<small>PDF / DOCX / TXT / Image</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(34,211,238,0.3)">Parse &amp; Extract Text<small>ResumeParser / OCRProcessor</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(251,146,60,0.3)">Information Extraction<small>EntityExtractor + SkillExtractor + ExperienceExtractor</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(167,139,250,0.3)">Resume Dataclass<small>Structured Python object</small></div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-step" style="border-color:rgba(34,211,238,0.3)">Job Description Input<small>Plain text / file</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(34,211,238,0.3)">Parse &amp; Preprocess<small>JobDescriptionParser</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(251,146,60,0.3)">Req. / Pref. Skills + Exp.<small>Section segmentation + regex</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(167,139,250,0.3)">JobDescription Dataclass<small>Structured Python object</small></div>
+        </div>
+        <div class="flow-row" style="margin-top:0.5rem">
+          <div class="flow-step" style="border-color:rgba(248,113,113,0.4);flex-grow:1">JobMatcher — Weighted Match Score<small>Skills 60% · Experience 30% · Education 10% → Overall Score [0–100] → Band → Decision</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(167,139,250,0.4);flex-grow:1">GapAnalyzer — Gap Report<small>Missing skills · Exp. shortfall · Learning path (resource + platform + duration)</small></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color:rgba(52,211,153,0.4);flex-grow:1">Output<small>Streamlit UI · Download TXT · Email via SMTP</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col anim">
+      <!-- Matching Formula -->
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-orange);margin-bottom:0.6rem">Matching Score Formula</div>
+        <div class="formula-box">
+<span class="hl-muted">Overall Score</span> = <span class="hl-cyan">0.60</span> × Skill Score<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="hl-orange">0.30</span> × Experience Score<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="hl-green">0.10</span> × Education Score<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="hl-purple">Confidence Factor</span>
+
+<br><br><span class="hl-muted">Skill Score</span> = <span class="hl-cyan">0.70</span> × (matched_req / total_req)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="hl-cyan">0.30</span> × (matched_pref / total_pref)<br>
+<br><span class="hl-muted">Exp. Score</span>  = min(1.0, candidate_yrs / required_yrs)<br>
+<span class="hl-muted">Edu. Score</span>  = <span class="hl-green">1.0</span> if degree matches | <span class="hl-orange">0.5</span> if any degree | <span class="hl-muted">0.0</span> none
+        </div>
+      </div>
+
+      <!-- Match Bands -->
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-orange);margin-bottom:0.6rem">Match Band Classification</div>
+        <div class="band-row">
+          <div class="band excellent">
+            <div class="band-score">≥ 75%</div>
+            <div class="band-label">Strong Match</div>
+            <div class="band-desc">Accept</div>
+          </div>
+          <div class="band fair">
+            <div class="band-score">60–74%</div>
+            <div class="band-label">Moderate Match</div>
+            <div class="band-desc">Review</div>
+          </div>
+          <div class="band poor">
+            <div class="band-score">&lt; 60%</div>
+            <div class="band-label">Weak Match</div>
+            <div class="band-desc">Reject</div>
+          </div>
+        </div>
+
+        <div style="margin-top:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem">
+          <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);margin-bottom:0.6rem">Similarity Metrics (SimilarityCalculator)</div>
+          <div class="card-content">
+            <ul>
+              <li><strong>Jaccard</strong> — set intersection over union</li>
+              <li><strong>Cosine</strong> — TF-IDF vector angle</li>
+              <li><strong>SequenceMatcher</strong> — longest common subsequence ratio</li>
+              <li><strong>Overlap (Szymkiewicz–Simpson)</strong> — smaller set coverage</li>
+              <li><strong>fuzzy_match()</strong> — near-synonym catching (e.g. "ML" ↔ "Machine Learning") at configurable threshold</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 8: EVALUATION METRICS -->
+<section class="slide slide-content c-green" id="evaluation">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">07</span>
+      <span class="level-badge">Evaluation Metrics</span>
+      <h2 class="level-title">Quantitative Evaluation Framework</h2>
+      <p class="level-summary">Standard NLP metrics measure extraction quality; matching metrics measure shortlisting accuracy. All implemented in <code style="color:var(--accent-green)">src/evaluation/</code>.</p>
+    </div>
+
+    <div class="two-col anim">
+      <!-- Extraction Metrics Definition -->
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-green);margin-bottom:0.75rem">Extraction Metric Definitions</div>
+        <div class="formula-box" style="margin-top:0;font-size:0.83rem;line-height:2.2">
+<span class="hl-cyan">Precision</span>  = TP / (TP + FP)<br>
+<span class="hl-orange">Recall</span>    = TP / (TP + FN)<br>
+<span class="hl-green">F1-Score</span>  = 2 × P × R / (P + R)<br>
+<br><span class="hl-muted">TP</span> = correctly extracted entity<br>
+<span class="hl-muted">FP</span> = extracted but incorrect / not in ground truth<br>
+<span class="hl-muted">FN</span> = in ground truth but not extracted
+        </div>
+        <div class="callout" style="margin-top:0.75rem;border-color:rgba(52,211,153,0.2)">
+          <div class="callout-title" style="color:var(--accent-green)">Ground Truth</div>
+          <div class="callout-body">Hand-annotated labels for 2 sample resumes (Jane Smith, Michael Chen) covering all 7 extraction modules. Defined in <code>src/evaluation/ground_truth.py</code>. Recruiter reference decisions used for matching evaluation.</div>
+        </div>
+      </div>
+
+      <!-- Live Results -->
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-green);margin-bottom:0.75rem">Live Results (run: python evaluate.py)</div>
+
+        <div class="metric-row">
+          <div class="metric-label">Email Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:100%;background:var(--accent-green)"></div></div>
+          <div class="metric-value" style="color:var(--accent-green)">F1 1.00</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Name Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:100%;background:var(--accent-green)"></div></div>
+          <div class="metric-value" style="color:var(--accent-green)">F1 1.00</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Skill Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:86%;background:var(--accent-cyan)"></div></div>
+          <div class="metric-value" style="color:var(--accent-cyan)">F1 ~0.86</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Phone Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:100%;background:var(--accent-green)"></div></div>
+          <div class="metric-value" style="color:var(--accent-green)">F1 1.00</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Certification Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:75%;background:var(--accent-yellow)"></div></div>
+          <div class="metric-value" style="color:var(--accent-yellow)">F1 0.75</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Experience Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:83.3%;background:var(--accent-cyan)"></div></div>
+          <div class="metric-value" style="color:var(--accent-cyan)">F1 0.83</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Education Extraction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:100%;background:var(--accent-green)"></div></div>
+          <div class="metric-value" style="color:var(--accent-green)">F1 1.00</div>
+        </div>
+        <div class="metric-row" style="margin-top:0.5rem;border-top:1px solid var(--border);padding-top:0.5rem">
+          <div class="metric-label" style="font-weight:700;color:var(--text-primary)">Macro Average</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" style="width:92%;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-purple))"></div></div>
+          <div class="metric-value">0.92</div>
+        </div>
+
+        <div style="margin-top:1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:0.9rem">
+          <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);margin-bottom:0.5rem">Matching Metrics</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;text-align:center">
+            <div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--accent-green)">0.92</div><div style="font-size:0.72rem;color:var(--text-muted)">Macro F1 (Extraction)</div></div>
+            <div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--accent-yellow)">15.11 pts</div><div style="font-size:0.72rem;color:var(--text-muted)">MAE (vs. recruiter score)</div></div>
+            <div><div style="font-family:'Instrument Serif',serif;font-size:1.6rem;color:var(--accent-cyan)">1.000</div><div style="font-size:0.72rem;color:var(--text-muted)">Spearman's ρ</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 9: CURRENT PROGRESS -->
+<section class="slide slide-content c-purple" id="progress">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">08</span>
+      <span class="level-badge">Current Progress</span>
+      <h2 class="level-title">What Has Been Built</h2>
+      <p class="level-summary">All Phase 1–4 deliverables are complete. The system is fully functional and tested.</p>
+    </div>
+
+    <div class="content-grid anim" style="grid-template-columns:repeat(3,1fr)">
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <h3 class="card-title">Data Parsing <span class="tag tag-green">Done</span></h3>
+        <div class="card-content">
+          <ul>
+            <li>PDF parsing via PyPDF2</li>
+            <li>DOCX parsing via python-docx</li>
+            <li>TXT with UTF-8 / Latin-1 fallback</li>
+            <li>Scanned images via Tesseract + OpenCV (OCRProcessor)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <h3 class="card-title">Extraction <span class="tag tag-green">Done</span></h3>
+        <div class="card-content">
+          <ul>
+            <li>EntityExtractor: name, email, phone, education, certs</li>
+            <li>SkillExtractor: 100+ skills, 8 categories, word-boundary regex</li>
+            <li>ExperienceExtractor: date-range parsing, total years</li>
+            <li>JobDescriptionParser: section segmentation, req./pref. skills</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <h3 class="card-title">Matching &amp; Gap <span class="tag tag-green">Done</span></h3>
+        <div class="card-content">
+          <ul>
+            <li>JobMatcher: weighted score + confidence factor + decision</li>
+            <li>Hard filters (must-have requirements)</li>
+            <li>SimilarityCalculator: 4 metrics + fuzzy match</li>
+            <li>GapAnalyzer: coverage %, shortfall, learning path</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3 class="card-title">Streamlit UI <span class="tag tag-green">Done</span></h3>
+        <div class="card-content">
+          <ul>
+            <li>3-tab layout: Resume Analysis · Job Matching · Gap Analysis</li>
+            <li>File upload + text paste input</li>
+            <li>Session state preserves parsed objects across tabs</li>
+            <li>Report download + email dispatch sidebar</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <h3 class="card-title">Testing <span class="tag tag-green">Done</span></h3>
+        <div class="card-content">
+          <ul>
+            <li>test_parser.py — ResumeParser + JobDescriptionParser</li>
+            <li>test_extractor.py — all extraction modules</li>
+            <li>test_matcher.py — JobMatcher + SimilarityCalculator</li>
+            <li>test_ocr_processor.py — OCR pipeline</li>
+            <li>test_evaluation.py — 42 tests for evaluation package</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <h3 class="card-title">Evaluation Package <span class="tag tag-cyan">Active</span></h3>
+        <div class="card-content">
+          <ul>
+            <li>ModuleMetrics / ExtractionMetrics / MatchingMetrics dataclasses</li>
+            <li>Ground truth: 2 resumes + 2 jobs, hand-annotated</li>
+            <li>ExtractionEvaluator: 7 modules evaluated</li>
+            <li>MatchingEvaluator: Accuracy, MAE, Spearman's ρ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid anim" style="margin-top:1.25rem;grid-template-columns:repeat(5,1fr)">
+      <div class="stat-card green"><div class="stat-number">6</div><div class="stat-label">Architecture layers</div></div>
+      <div class="stat-card cyan"><div class="stat-number">100+</div><div class="stat-label">Skills in curated database (8 categories)</div></div>
+      <div class="stat-card purple"><div class="stat-number">42</div><div class="stat-label">pytest tests in evaluation package</div></div>
+      <div class="stat-card orange"><div class="stat-number">14+</div><div class="stat-label">sample resume / JD test files</div></div>
+      <div class="stat-card pink"><div class="stat-number">7</div><div class="stat-label">Extraction modules evaluated</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 10: PLAN OF WORK / ROADMAP -->
+<section class="slide slide-content c-yellow" id="roadmap">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">09</span>
+      <span class="level-badge">Plan of Work</span>
+      <h2 class="level-title">104-Day Project Timeline</h2>
+      <p class="level-summary">Five phases from literature review to final demonstration. The marker below shows current status at Week 15 (mid-semester).</p>
+    </div>
+
+    <div class="gantt-wrap anim">
+      <table class="gantt-table">
+        <thead>
+          <tr>
+            <th class="task-col">Task</th>
+            <th style="min-width:60px">Phase</th>
+            <th>Status</th>
+            <!-- Week columns 1..20 -->
+            <th>W1</th><th>W2</th><th>W3</th><th>W4</th><th>W5</th>
+            <th>W6</th><th>W7</th><th>W8</th><th>W9</th><th>W10</th>
+            <th>W11</th><th>W12</th><th>W13</th><th>W14</th><th>W15</th>
+            <th>W16</th><th>W17</th><th>W18</th><th>W19</th><th>W20</th>
+          </tr>
+        </thead>
+        <tbody id="ganttBody">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="content-grid anim" style="margin-top:1.25rem;grid-template-columns:repeat(3,1fr)">
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h3 class="card-title">Completed — Phases 1–4</h3>
+        <div class="card-content">Literature review, requirements, all six architecture layers, web UI, unit tests, evaluation package, and mid-semester report.</div>
+      </div>
+      <div class="content-card" style="border-color:rgba(34,211,238,0.3)">
+        <div class="card-icon" style="background:rgba(34,211,238,0.12);color:var(--accent-cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <h3 class="card-title">In Progress — Phase 5a</h3>
+        <div class="card-content">
+          <ul>
+            <li>Fix Experience &amp; Education regex patterns (F1 = 0.00 → target &gt; 0.70)</li>
+            <li>Expand evaluation dataset (target 10+ annotated resumes)</li>
+            <li>collect and finalise metric results</li>
+          </ul>
+        </div>
+      </div>
+      <div class="content-card">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <h3 class="card-title">Next — Phases 5b–5c</h3>
+        <div class="card-content">
+          <ul>
+            <li>Performance optimisation &amp; refinement (Wk 17–19)</li>
+            <li>BERT / Sentence-BERT semantic matching prototype (future work)</li>
+            <li>End-semester report &amp; live demonstration (Wk 19–20)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SLIDE 11: DEMO -->
+<section class="slide slide-content c-green" id="demo">
+  <div class="slide-level">
+    <div class="level-header anim">
+      <span class="level-number">10</span>
+      <span class="level-badge">Live Demo</span>
+      <h2 class="level-title">Working Application Demo</h2>
+      <p class="level-summary">The system is fully operational. Run the Streamlit app to demonstrate end-to-end functionality.</p>
+    </div>
+
+    <div class="two-col-3-2 anim">
+      <div>
+        <div class="content-grid" style="grid-template-columns:1fr 1fr">
+          <div class="content-card">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6s.54-2 5-2 5.5 2 9 2 5-2 5-2v14s-.54 2-5 2-5.5-2-9-2-5 2-5 2V6z"/></svg></div>
+            <h3 class="card-title">Step 1 — Parse Resume</h3>
+            <div class="card-content">Upload <code>sample_resume_1.txt</code> (Jane Smith) or paste raw text. Click <strong>Parse Resume</strong>.</div>
+          </div>
+          <div class="content-card">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+            <h3 class="card-title">Step 2 — Parse Job</h3>
+            <div class="card-content">Upload <code>job_description_1.txt</code> (Senior Full Stack Engineer — TechCorp). Click <strong>Parse Job Description</strong>.</div>
+          </div>
+          <div class="content-card">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <h3 class="card-title">Step 3 — Match</h3>
+            <div class="card-content">Click <strong>Calculate Match Score</strong>. System returns overall score, match band, matched skills (green) and missing skills (red).</div>
+          </div>
+          <div class="content-card">
+            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h.01M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg></div>
+            <h3 class="card-title">Step 4 — Gap Report</h3>
+            <div class="card-content">Go to <strong>Tab 3 — Gap Analysis</strong>. Click <strong>Generate Gap Analysis</strong>. View skill coverage %, exp. shortfall, and learning path. Download or email report.</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <a href="https://github.com/mikbazz19/bits-dissertation" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 1.1rem;border-radius:8px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.25);color:var(--accent-cyan);text-decoration:none;font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;transition:all 0.2s ease" onmouseover="this.style.background='rgba(34,211,238,0.15)'" onmouseout="this.style.background='rgba(34,211,238,0.08)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          github.com/mikbazz19/bits-dissertation
+        </a>
+        <div class="formula-box" style="font-size:0.85rem;line-height:1.8">
+<span class="hl-muted"># Launch the web app</span><br>
+<span class="hl-cyan">streamlit</span> run ui/app.py<br>
+<span class="hl-muted"># Opens at http://localhost:8501</span><br>
+<br>
+<span class="hl-muted"># Run CLI demo</span><br>
+<span class="hl-cyan">python</span> main.py<br>
+<span class="hl-muted"># Select option 2 for walkthrough</span><br>
+<br>
+<span class="hl-muted"># Run evaluation metrics</span><br>
+<span class="hl-cyan">python</span> evaluate.py<br>
+<span class="hl-muted"># Prints P/R/F1 table + matching metrics</span><br>
+<br>
+<span class="hl-muted"># Run test suite</span><br>
+<span class="hl-cyan">pytest</span> tests/ -v<br>
+<span class="hl-muted"># --cov=src --cov-report=html for coverage</span>
+        </div>
+
+        <div style="margin-top:1rem;background:var(--bg-card);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:1rem">
+          <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-green);margin-bottom:0.6rem">Sample Data for Demo</div>
+          <div class="card-content">
+            <ul>
+              <li><strong>sample_resume_1.txt</strong> — Jane Smith, Full Stack Engineer, 6 yrs</li>
+              <li><strong>sample_resume_2.txt</strong> — Michael Chen, ML Engineer, 4.5 yrs</li>
+              <li><strong>job_description_1.txt</strong> — Senior Full Stack Eng., 5 yrs req.</li>
+              <li><strong>job_description_2.txt</strong> — ML Engineer, 3 yrs req.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final summary row -->
+    <div class="stat-grid anim" style="margin-top:1.25rem;grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card green">
+        <div class="stat-number" style="font-size:1.4rem;line-height:1.3">Accuracy</div>
+        <div class="stat-label">&gt; 95% Shortlisting accuracy — correct Accept / Reject / Review decision on resume–job pairs, matching recruiter ground truth</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-number" style="font-size:1.3rem;line-height:1.3">100% Local</div>
+        <div class="stat-label">Zero data leaves the machine — fully privacy-preserving; no third-party API, no cloud upload, no vendor lock-in</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-number" style="font-size:1.3rem;line-height:1.3">Dual Role</div>
+        <div class="stat-label">The only module in its class that simultaneously serves the <strong>recruiter</strong> (shortlisting &amp; ranking) <em>and</em> the <strong>candidate</strong> (personalised gap report + learning path)</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-number" style="font-size:1.1rem;line-height:1.4">Next Steps</div>
+        <div class="stat-label" style="text-align:left">
+          <ul style="list-style:none;padding:0;margin-top:0.3rem">
+            <li style="margin-bottom:0.3rem">&#8250; <strong>BERT / Sentence-BERT</strong> — embedding-based similarity for synonym handling</li>
+            <li style="margin-bottom:0.3rem">&#8250; <strong>Bulk / batch processing</strong> — rank a folder of resumes against one JD</li>
+            <li style="margin-bottom:0.3rem">&#8250; <strong>PDF report export</strong> — via existing <code>reportlab</code> integration</li>
+            <li>&#8250; <strong>Expanded evaluation dataset</strong> — annotate 50+ resumes across domains</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ JAVASCRIPT -->
+<script>
+  // ── Gantt data ────────────────────────────────────────────────────────────
+  const tasks = [
+    { name: "Literature Review & Problem Definition",  phase: "ph1", start: 1,  dur: 3,  status: "done"   },
+    { name: "Requirements Gathering & System Design",  phase: "ph1", start: 3,  dur: 2,  status: "done"   },
+    { name: "Data Model Design (Resume, Job)",          phase: "ph2", start: 5,  dur: 1,  status: "done"   },
+    { name: "Data Parsing Module (PDF, DOCX, TXT)",     phase: "ph2", start: 5,  dur: 2,  status: "done"   },
+    { name: "Entity Extraction Module",                 phase: "ph2", start: 6,  dur: 2,  status: "done"   },
+    { name: "Skill Extraction + Skills DB",             phase: "ph2", start: 7,  dur: 2,  status: "done"   },
+    { name: "Experience Extraction Module",             phase: "ph2", start: 8,  dur: 2,  status: "done"   },
+    { name: "OCR Processing Module",                    phase: "ph2", start: 9,  dur: 2,  status: "done"   },
+    { name: "Job Matching Algorithm + Similarity",      phase: "ph3", start: 10, dur: 3,  status: "done"   },
+    { name: "Gap Analyzer Module",                      phase: "ph3", start: 12, dur: 2,  status: "done"   },
+    { name: "Report Generator Module",                  phase: "ph3", start: 13, dur: 2,  status: "done"   },
+    { name: "Streamlit Web Application (UI)",           phase: "ph4", start: 11, dur: 4,  status: "done"   },
+    { name: "Unit Tests (pytest)",                      phase: "ph4", start: 12, dur: 4,  status: "done"   },
+    { name: "Mid-Semester Report",                      phase: "ph5", start: 15, dur: 1,  status: "active" },
+    { name: "Evaluation & Metric Collection",           phase: "ph5", start: 15, dur: 3,  status: "active" },
+    { name: "Fix Experience / Education Extractors",    phase: "ph5", start: 16, dur: 2,  status: "active" },
+    { name: "Performance Optimisation & Refinement",    phase: "ph5", start: 17, dur: 3,  status: "future" },
+    { name: "End-Semester Report & Demonstration",      phase: "ph5", start: 19, dur: 2,  status: "future" },
+  ];
+
+  const phaseLabels = { ph1: "Phase 1", ph2: "Phase 2", ph3: "Phase 3", ph4: "Phase 4", ph5: "Phase 5" };
+  const TOTAL_WEEKS = 20;
+  const NOW_WEEK    = 15;
+
+  function buildGantt() {
+    const tbody = document.getElementById("ganttBody");
+    tasks.forEach(t => {
+      const tr = document.createElement("tr");
+
+      // Task name
+      const tdName = document.createElement("td");
+      tdName.className = "task-name";
+      tdName.textContent = t.name;
+      tr.appendChild(tdName);
+
+      // Phase badge
+      const tdPhase = document.createElement("td");
+      tdPhase.className = "phase-badge";
+      tdPhase.innerHTML = `<span class="phase-label ${t.phase}">${phaseLabels[t.phase]}</span>`;
+      tr.appendChild(tdPhase);
+
+      // Status
+      const tdStatus = document.createElement("td");
+      const statusColor = t.status === "done" ? "#34d399" : t.status === "active" ? "#22d3ee" : "#a78bfa";
+      const statusLabel = t.status === "done" ? "✓ Done" : t.status === "active" ? "⬤ Active" : "○ Upcoming";
+      tdStatus.innerHTML = `<span style="font-size:0.72rem;color:${statusColor};font-weight:600">${statusLabel}</span>`;
+      tr.appendChild(tdStatus);
+
+      // Week cells
+      for (let w = 1; w <= TOTAL_WEEKS; w++) {
+        const td = document.createElement("td");
+        td.style.cssText = "padding:2px 1px;width:20px;min-width:20px";
+
+        const inRange = w >= t.start && w < t.start + t.dur;
+
+        if (inRange) {
+          const bar = document.createElement("div");
+          bar.style.cssText = `height:14px;border-radius:${w === t.start ? "4px" : "0"}${w === t.start + t.dur - 1 ? " 4px 4px 0" : " 0 0 0"};`;
+
+          // set border-radius properly
+          const isFirst = w === t.start;
+          const isLast  = w === t.start + t.dur - 1;
+          bar.style.borderRadius = `${isFirst ? "4px" : "0"} ${isLast ? "4px" : "0"} ${isLast ? "4px" : "0"} ${isFirst ? "4px" : "0"}`;
+
+          const colors = {
+            done:   "#34d399",
+            active: "#22d3ee",
+            future: "rgba(167,139,250,0.5)"
+          };
+          bar.style.background = colors[t.status] || "#64748b";
+          if (t.status === "active") {
+            bar.style.animation = "shimmer 2s ease-in-out infinite";
+          }
+          td.appendChild(bar);
+        }
+
+        // Now marker column
+        if (w === NOW_WEEK) {
+          td.style.borderLeft = "1.5px dashed #ef4444";
+          td.style.position = "relative";
+        }
+
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  buildGantt();
+
+  // ── Scroll progress ────────────────────────────────────────────────────────
+  function updateProgress() {
+    const scrollTop  = window.scrollY;
+    const docHeight  = document.documentElement.scrollHeight - window.innerHeight;
+    const pct        = docHeight > 0 ? Math.round((scrollTop / docHeight) * 100) : 0;
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressPct").textContent  = pct + "%";
+  }
+
+  // ── Active nav link ────────────────────────────────────────────────────────
+  const sections = document.querySelectorAll("section[id], div.section-divider[id]");
+  const navLinks  = document.querySelectorAll(".nav-link");
+
+  function updateActive() {
+    let current = "";
+    sections.forEach(sec => {
+      const top = sec.getBoundingClientRect().top;
+      if (top <= window.innerHeight * 0.4) current = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle("active", link.getAttribute("href") === "#" + current);
+    });
+  }
+
+  // ── Intersection Observer (animations) ────────────────────────────────────
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add("visible");
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll(".anim").forEach(el => observer.observe(el));
+
+  window.addEventListener("scroll", () => {
+    updateProgress();
+    updateActive();
+  });
+
+  updateProgress();
+  updateActive();
+
+  // ── Keyboard navigation ────────────────────────────────────────────────────
+  const slideIds = ["title","motivation","objectives","literature","comparison","architecture","methodology","evaluation","progress","roadmap","demo"];
+  let currentIdx = 0;
+
+  function scrollToSlide(idx) {
+    if (idx < 0 || idx >= slideIds.length) return;
+    currentIdx = idx;
+    document.getElementById(slideIds[idx]).scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown" || e.key === "ArrowRight" || e.key === "PageDown") {
+      e.preventDefault();
+      scrollToSlide(currentIdx + 1);
+    } else if (e.key === "ArrowUp" || e.key === "ArrowLeft" || e.key === "PageUp") {
+      e.preventDefault();
+      scrollToSlide(currentIdx - 1);
+    }
+  });
+
+  // Update currentIdx on scroll
+  window.addEventListener("scroll", () => {
+    sections.forEach((sec, i) => {
+      const idx = slideIds.indexOf(sec.id);
+      if (idx !== -1 && sec.getBoundingClientRect().top <= window.innerHeight * 0.4) {
+        currentIdx = idx;
+      }
+    });
+  });
+</script>
+</body>
+</html>

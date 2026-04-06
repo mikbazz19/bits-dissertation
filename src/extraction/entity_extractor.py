@@ -15,6 +15,19 @@ class EntityExtractor:
             'B.Com', 'M.Com', 'BA', 'MA', 'BS', 'MS', 'BSc', 'MSc'
         ]
     
+    # LinkedIn profile URL
+    _LINKEDIN_RE = re.compile(
+        r'(?:https?://)?(?:www\.)?linkedin\.com/in/[\w\-]+/?',
+        re.IGNORECASE
+    )
+
+    # GitHub profile URL (matches github.com/user or github.com/user/repo —
+    # we keep the full matched URL so the link works as-is)
+    _GITHUB_RE = re.compile(
+        r'(?:https?://)?(?:www\.)?github\.com/[\w\-]+(?:/[\w\-\.]+)?',
+        re.IGNORECASE
+    )
+
     def extract_all_entities(self, text: str) -> Dict:
         """Extract all entities from resume text"""
         return {
@@ -22,25 +35,66 @@ class EntityExtractor:
             'email': extract_email(text),
             'phone': extract_phone(text),
             'education': self.extract_education(text),
-            'certifications': self.extract_certifications(text)
+            'certifications': self.extract_certifications(text),
+            'linkedin': self.extract_linkedin(text),
+            'github': self.extract_github(text),
         }
     
+    def extract_linkedin(self, text: str) -> Optional[str]:
+        """Return the first LinkedIn profile URL found, normalised to https://."""
+        m = self._LINKEDIN_RE.search(text)
+        if not m:
+            return None
+        url = m.group(0)
+        if not url.lower().startswith('http'):
+            url = 'https://' + url
+        return url
+
+    def extract_github(self, text: str) -> Optional[str]:
+        """Return the first GitHub URL found, normalised to https://."""
+        m = self._GITHUB_RE.search(text)
+        if not m:
+            return None
+        url = m.group(0)
+        if not url.lower().startswith('http'):
+            url = 'https://' + url
+        return url
+
+    # Common honorific prefixes that precede names
+    _HONORIFIC_RE = re.compile(
+        r'^(?:Dr|Mr|Mrs|Ms|Miss|Prof|Rev|Sir|Mx)\.?\s+',
+        re.IGNORECASE
+    )
+
     def extract_name(self, text: str) -> Optional[str]:
         """Extract candidate name (usually at the top of resume)"""
-        # Get first few lines
-        lines = text.strip().split('\n')[:5]
-        
+        lines = text.strip().split('\n')[:6]
+
         for line in lines:
             line = line.strip()
-            # Name is usually in first lines, capitalized, no special chars
-            if line and len(line.split()) <= 4:
-                # Check if it looks like a name (mostly letters)
-                if re.match(r'^[A-Z][a-z]+(\s+[A-Z][a-z]+)+$', line):
-                    return line
-                # Also check for all caps names
-                if re.match(r'^[A-Z\s]+$', line) and 2 <= len(line.split()) <= 4:
-                    return line.title()
-        
+            if not line:
+                continue
+
+            # Strip honorific prefix (Dr., Mr., Prof., etc.) before matching
+            name_part = self._HONORIFIC_RE.sub('', line).strip()
+
+            words = name_part.split()
+            if len(words) < 2 or len(words) > 5:
+                continue
+
+            # Title-case with unicode support and optional hyphens.
+            # Require at least one lowercase letter so all-caps falls through.
+            if (re.match(
+                    r'^[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F\-]*'
+                    r'(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F\-]*)+$',
+                    name_part
+                ) and any(c.islower() for c in name_part)):
+                return line
+
+            # All-caps names (e.g. "SARAH KRISHNAMURTHY" or after stripping "DR.")
+            if re.match(r'^[A-Z][A-Z\s\-]+$', name_part) and len(words) >= 2:
+                return line.title()
+
         return None
     
     def extract_education(self, text: str) -> List[Dict]:
@@ -48,8 +102,8 @@ class EntityExtractor:
         education_list = []
         
         # Find education section
-        education_pattern = r'(?:EDUCATION|Education|ACADEMIC|Academic)(.*?)(?=\n\n[A-Z]{2,}|\Z)'
-        match = re.search(education_pattern, text, re.DOTALL | re.IGNORECASE)
+        education_pattern = r'(?:EDUCATION|Education|ACADEMIC|Academic)\s*\n(.*?)(?=\n\s*\n[A-Z]{2,}|\Z)'
+        match = re.search(education_pattern, text, re.DOTALL)
         
         if match:
             education_text = match.group(1)
@@ -59,7 +113,7 @@ class EntityExtractor:
         # Extract degree information
         for degree in self.degree_keywords:
             pattern = rf'{degree}[^a-zA-Z].*?(?:\d{{4}}|\d{{2}})'
-            matches = re.finditer(pattern, education_text, re.IGNORECASE)
+            matches = re.finditer(pattern, education_text, re.IGNORECASE | re.DOTALL)
             
             for match in matches:
                 edu_entry = match.group(0)

@@ -33,6 +33,8 @@ class Resume:
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
+    linkedin: Optional[str] = None
+    github: Optional[str] = None
     skills: List[str] = field(default_factory=list)
     education: List[Education] = field(default_factory=list)
     experience: List[Experience] = field(default_factory=list)
@@ -46,6 +48,8 @@ class Resume:
             'name': self.name,
             'email': self.email,
             'phone': self.phone,
+            'linkedin': self.linkedin,
+            'github': self.github,
             'skills': self.skills,
             'education': [
                 {

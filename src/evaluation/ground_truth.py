@@ -96,7 +96,7 @@ ANNOTATION_RESUME_1 = ResumeAnnotation(
     total_experience_years=6.0,  # "6+ years" stated in summary
 
     # ── Education ─────────────────────────────────────────────────────────
-    education_degrees=["B.Tech"],   # Bachelor of Technology in Computer Science
+    education_degrees=["Bachelor"],   # Bachelor of Technology in Computer Science
 
     # ── Certifications ────────────────────────────────────────────────────
     certifications=[
@@ -156,7 +156,7 @@ ANNOTATION_RESUME_2 = ResumeAnnotation(
     total_experience_years=4.5,  # 2 + 1.5 + 1 years from the resume
 
     # ── Education ─────────────────────────────────────────────────────────
-    education_degrees=["MS", "BS"],   # M.S. Data Science + B.S. Statistics
+    education_degrees=["Master", "Bachelor"],   # M.S. Data Science + B.S. Statistics
 
     # ── Certifications ────────────────────────────────────────────────────
     certifications=[

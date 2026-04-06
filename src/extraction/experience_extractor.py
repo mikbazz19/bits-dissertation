@@ -18,59 +18,117 @@ class ExperienceExtractor:
             'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
         ]
     
+    # Keywords that indicate a job title line
+    _TITLE_KEYWORDS = (
+        r'Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|'
+        r'Architect|Lead|Director|Specialist|Intern|Trainee|Officer|Researcher|'
+        r'Programmer|Administrator|Executive|Associate|Coordinator|Advisor|'
+        r'Head|VP|President|Founder|CTO|CEO|CIO|CFO|COO'
+    )
+
     def extract_experience(self, text: str, experience_section: str = None) -> List[Experience]:
         """Extract work experience entries from text"""
-        # Use experience section if provided, otherwise use full text
         search_text = experience_section if experience_section else text
-        
         if not search_text:
             return []
-        
-        experiences = []
-        
-        # Pattern to match experience entries
-        # Looking for patterns like: Job Title at Company (Date - Date)
-        patterns = [
-            # Pattern 1: Title at Company, Date - Date
-            r'([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))\s+(?:at|@)\s+([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Za-z]+\s+\d{4}\s*[-–—]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
-            
-            # Pattern 2: Company - Title (Date - Date)
-            r'([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))[\s\n]+([A-Za-z]+\s+\d{4}\s*[-\u2013\u2014]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
 
-            # Pattern 3: Title (alone on line), Company (next line), Date range (next line)
-            r'^([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist|Intern|Trainee))\s*$\n'
-            r'^([A-Z][A-Za-z\s&\.,]+(?:Inc|Corp|Ltd|LLC|Solutions|Technologies|Systems|Labs?|Group|Company|Services|Co)[\.\s,]*).*$\n'
-            r'^([A-Za-z]+\s+\d{4}\s*[-\u2013\u2014]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
-        ]
-        
-        for pattern in patterns:
-            matches = re.finditer(pattern, search_text, re.MULTILINE)
-            
-            for match in matches:
-                if len(match.groups()) >= 3:
-                    # Extract components
-                    title = match.group(1).strip()
-                    company = match.group(2).strip()
-                    duration = match.group(3).strip()
-                    
-                    # Extract description (text following the match)
-                    start_pos = match.end()
-                    description = self._extract_description(search_text, start_pos)
-                    
-                    # Parse dates
+        # Primary: block-based parser for the common resume format
+        #   Title
+        #   Company, Location
+        #   Month YYYY – Month YYYY / Present
+        experiences = self._extract_block_entries(search_text)
+
+        # Fallback: inline regex patterns (original approach)
+        if not experiences:
+            experiences = self._extract_inline_entries(search_text)
+
+        # Deduplicate by title
+        seen = set()
+        unique = []
+        for exp in experiences:
+            key = exp.title.lower().strip()
+            if key not in seen:
+                seen.add(key)
+                unique.append(exp)
+
+        return unique
+
+    def _extract_block_entries(self, text: str) -> List[Experience]:
+        """
+        Handle the common resume format where each entry is a block:
+            <Job Title>
+            <Company Name, Location>
+            <Month YYYY – Month YYYY | Present>
+        Blocks are separated by blank lines or by the next title keyword.
+        """
+        experiences = []
+        title_re = re.compile(
+            rf'^([A-Z][A-Za-z\s&/,]+(?:{self._TITLE_KEYWORDS}))\s*$',
+            re.MULTILINE | re.IGNORECASE,
+        )
+        date_re = re.compile(
+            r'([A-Za-z]+\s+\d{4}|\d{4})\s*[-\u2013\u2014]\s*'
+            r'([A-Za-z]+\s+\d{4}|\d{4}|Present|Current)',
+            re.IGNORECASE,
+        )
+
+        lines = text.splitlines()
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            title_match = title_re.match(line)
+            if title_match:
+                title = title_match.group(1).strip()
+                company = ''
+                duration = ''
+                # Scan next 4 lines for company and date
+                for j in range(i + 1, min(i + 5, len(lines))):
+                    candidate = lines[j].strip()
+                    if not candidate:
+                        continue
+                    date_match = date_re.search(candidate)
+                    if date_match:
+                        duration = candidate
+                        break
+                    if not company:
+                        # First non-empty line after title = company
+                        company = re.split(r',', candidate)[0].strip()
+
+                if duration:
                     start_date, end_date = self._parse_dates(duration)
-                    
-                    experience = Experience(
+                    experiences.append(Experience(
                         title=title,
                         company=company,
                         duration=duration,
-                        description=description,
+                        description='',
                         start_date=start_date,
-                        end_date=end_date
-                    )
-                    
-                    experiences.append(experience)
-        
+                        end_date=end_date,
+                    ))
+            i += 1
+
+        return experiences
+
+    def _extract_inline_entries(self, text: str) -> List[Experience]:
+        """Legacy inline regex patterns kept as fallback."""
+        experiences = []
+        patterns = [
+            # Pattern 1: Title at Company, Date - Date
+            r'([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))\s+(?:at|@)\s+([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Za-z]+\s+\d{4}\s*[-\u2013\u2014]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
+            # Pattern 2: Company – Title (Date - Date)
+            r'([A-Z][A-Za-z\s&\.]+)[\s\n]+([A-Z][A-Za-z\s&]+(?:Engineer|Developer|Manager|Analyst|Scientist|Consultant|Designer|Architect|Lead|Director|Specialist))[\s\n]+([A-Za-z]+\s+\d{4}\s*[-\u2013\u2014]\s*(?:[A-Za-z]+\s+\d{4}|Present|Current))',
+        ]
+        for pattern in patterns:
+            for match in re.finditer(pattern, text, re.MULTILINE):
+                if len(match.groups()) >= 3:
+                    title = match.group(1).strip()
+                    company = match.group(2).strip()
+                    duration = match.group(3).strip()
+                    start_date, end_date = self._parse_dates(duration)
+                    experiences.append(Experience(
+                        title=title, company=company, duration=duration,
+                        description=self._extract_description(text, match.end()),
+                        start_date=start_date, end_date=end_date,
+                    ))
         return experiences
     
     def calculate_total_experience(self, experiences: List[Experience]) -> float:

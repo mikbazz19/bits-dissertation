@@ -156,7 +156,7 @@ class TextPreprocessor:
         # Common section headers
         section_patterns = {
             'education': r'(?:EDUCATION|Education|ACADEMIC)',
-            'experience': r'(?:EXPERIENCE|Experience|WORK EXPERIENCE|Employment History)',
+            'experience': r'(?:EXPERIENCE\b|WORK EXPERIENCE\b|Employment History\b)',
             'skills': r'(?:SKILLS|Skills|TECHNICAL SKILLS|Core Competencies)',
             'projects': r'(?:PROJECTS|Projects)',
             'certifications': r'(?:CERTIFICATIONS?|Certifications?|LICENSES)',

@@ -46,7 +46,7 @@ from ..models.job import JobDescription
 from .ground_truth import JobAnnotation, ResumeAnnotation
 from .metrics import MatchingMetrics
 
-_SHORTLIST_LEVELS = {"Excellent Match", "Good Match"}
+_SHORTLIST_LEVELS = {"Strong Match"}
 
 
 class MatchingEvaluator:

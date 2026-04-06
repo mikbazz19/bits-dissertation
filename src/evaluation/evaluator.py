@@ -150,10 +150,9 @@ class ExtractionEvaluator:
         )
 
         # ── 5. Experience Extraction ──────────────────────────────────────
-        sections = self._preprocessor.extract_sections(resume_text)
-        pred_experiences = self._experience.extract_experience(
-            resume_text, sections.get("experience", "")
-        )
+        # Pass full resume text so the block-based extractor can scan the whole
+        # document; the preprocessor's section splitter is unreliable here.
+        pred_experiences = self._experience.extract_experience(resume_text)
         pred_exp_titles = [e.title for e in pred_experiences]
         truth_exp_titles = [e["title"] for e in ann.experience_entries]
         metrics.append(

@@ -119,23 +119,42 @@ class ReportGenerator:
         
         return "\n".join(report)
     
-    def generate_gap_report(self, gap_analysis: Dict) -> str:
+    def generate_gap_report(self, gap_analysis: Dict, match_result: Optional[Dict] = None) -> str:
         """Generate detailed gap analysis report"""
         
         report = []
-        report.append("=" * 80)
-        report.append("SKILL GAP ANALYSIS REPORT")
-        report.append("=" * 80)
         report.append("")
         
         # Skill Gaps
         skill_gaps = gap_analysis.get('skill_gaps', {})
         report.append("SKILLS COVERAGE")
         report.append("-" * 80)
-        report.append(f"Required Skills Coverage: {skill_gaps.get('required_skills_coverage', 0)}%")
-        report.append(f"Preferred Skills Coverage: {skill_gaps.get('preferred_skills_coverage', 0)}%")
-        report.append(f"Total Missing Skills: {skill_gaps.get('total_missing', 0)}")
+
+        # Prefer authoritative scores from match_result (JobMatcher) if available
+        if match_result:
+            report.append(f"Overall Match Score : {match_result.get('overall_score', 0):.1f}%")
+            report.append(f"Skills Match        : {match_result.get('skill_score', 0):.1f}%")
+            report.append(f"Experience Match    : {match_result.get('experience_score', 0):.1f}%")
+            report.append(f"Education Match     : {match_result.get('education_score', 0):.1f}%")
+        else:
+            report.append(f"Required Skills Coverage: {skill_gaps.get('required_skills_coverage', 0)}%")
+            report.append(f"Preferred Skills Coverage: {skill_gaps.get('preferred_skills_coverage', 0)}%")
         report.append("")
+
+        missing_required = skill_gaps.get('missing_required_skills', [])
+        missing_preferred = skill_gaps.get('missing_preferred_skills', [])
+
+        if missing_required:
+            report.append("Missing Required Skills:")
+            for skill in missing_required:
+                report.append(f"  ✗ {skill}")
+            report.append("")
+
+        if missing_preferred:
+            report.append("Missing Preferred Skills:")
+            for skill in missing_preferred:
+                report.append(f"  ○ {skill}")
+            report.append("")
         
         # Priority Areas
         priority = gap_analysis.get('priority_areas', [])

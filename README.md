@@ -88,9 +88,13 @@ This dissertation project lies at the intersection of **Artificial Intelligence*
 ### Web Application (Streamlit)
 
 - Three-tab layout: Resume Analysis · Job Matching · Gap Analysis
+- **Single / Batch processing mode** selectable from the Resume Analysis tab
+  - **Single mode** – one resume against one JD (full workflow)
+  - **Batch mode** – upload up to 10 resumes against one JD; results displayed in collapsible expanders
 - File upload + text paste input
 - Session state preserves parsed objects across tab switches
-- Report download button
+- Progress bars during batch parsing, matching, and gap analysis
+- PDF report download and email dispatch per candidate
 - Email dispatch to candidate via SMTP (TLS / SSL)
 - Temporary uploaded files are written to `temp/` and deleted after parsing
 
@@ -257,7 +261,13 @@ Produces `Mid_Semester_Report_AI_Resume_Screening.docx` in the project root with
 
 ## 📖 How to Use
 
-### Tab 1 – Resume Analysis
+### Processing Mode
+
+The **Resume Analysis** tab contains a **Processing Mode** toggle (Single / Batch). Choose the mode before starting.
+
+### Single Mode
+
+#### Tab 1 – Resume Analysis
 
 1. Choose **Upload File** (PDF / DOCX / TXT / image) or **Paste Text**.
 2. Click **Parse Resume**.
@@ -265,20 +275,41 @@ Produces `Mid_Semester_Report_AI_Resume_Screening.docx` in the project root with
 
 > For scanned PDFs or images the system automatically routes input through `OCRProcessor` (requires Tesseract).
 
-### Tab 2 – Job Matching
+#### Tab 2 – Job Matching
 
 1. Paste or upload a job description.
 2. Click **Parse Job Description** to extract required skills, preferred skills, and experience requirement.
 3. Click **Calculate Match Score**.
 4. Review the overall score (0–100 %), match band, matched skills (green), missing skills (red), and recommendation.
 
-### Tab 3 – Gap Analysis
+#### Tab 3 – Gap Analysis
 
 1. Complete Tabs 1 and 2 first (parsed objects are held in session state).
 2. Click **Generate Gap Analysis**.
 3. Review skill coverage percentages, experience gap, improvement suggestions, and learning path.
 4. **Download Report** to save the text report locally.
 5. **Send Email** to dispatch the gap report to the candidate (configure SMTP in the sidebar).
+
+### Batch Mode
+
+#### Tab 1 – Resume Analysis (Batch)
+
+1. Upload up to **10 resumes** (PDF / DOCX / TXT / image).
+2. Click **Parse All Resumes**. A progress bar tracks parsing.
+3. Parsed results appear in collapsible expanders — one per resume, showing the same extracted entities as single mode.
+4. Failed parses display the error inline.
+
+#### Tab 2 – Job Matching (Batch)
+
+1. Upload or paste **one job description** (left panel).
+2. Click **Parse Job Description**.
+3. Click **Calculate Match Scores** to match all parsed resumes against the JD.
+4. Results appear in collapsible expanders — one per resume — with score, decision (Accept / Review / Reject), matched/missing skills.
+
+#### Tab 3 – Gap Analysis (Batch)
+
+1. Click **Generate All Gap Analyses**.
+2. Each resume–JD pair gets its own collapsible section with skill coverage, experience analysis, improvement suggestions, priority areas, PDF report download, and email provision.
 
 ### Email Configuration (Sidebar)
 
@@ -510,8 +541,6 @@ Gmail requires an **App Password**, not your regular password:
 1. **BERT / Sentence-BERT semantic matching** – replace keyword overlap with embedding-based similarity to handle synonyms and paraphrasing
 2. **Experience and Education extractor improvements** – update regex patterns to handle section-bullet format (currently 0.00 F1)
 3. **Expanded evaluation dataset** – annotate 50+ resumes across multiple domains for a robust benchmark
-4. **Bulk / batch processing** – rank a folder of resumes against a single job description
-5. **PDF report export** – produce downloadable PDF gap reports via the existing `reportlab` integration
 
 ---
 

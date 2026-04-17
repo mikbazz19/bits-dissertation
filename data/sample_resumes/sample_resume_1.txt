@@ -28,7 +28,7 @@ June 2019 - February 2021
 
 Junior Software Engineer
 StartUp Labs, Remote
-August 2017 - May 2019
+August 2018 - May 2019
 - Built and maintained web applications using Django and Flask
 - Implemented automated testing suites improving code coverage to 85%
 - Participated in sprint planning and daily standups
@@ -38,7 +38,7 @@ EDUCATION
 
 Bachelor of Technology in Computer Science
 University of California, Berkeley
-Graduated: May 2017
+Graduated: May 2018
 GPA: 3.7/4.0
 
 TECHNICAL SKILLS

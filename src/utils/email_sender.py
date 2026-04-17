@@ -265,7 +265,6 @@ This is an automated message. Please do not reply to this email.
             return {'success': False, 'message': 'No valid recipient addresses.'}
 
         subject = f"Application Update – {job_title} at {company_name}"
-        separator = "=" * 70
         body = (
             f"Dear {candidate_name},\n\n"
             f"Thank you for your interest in the {job_title} position at {company_name} "
@@ -276,14 +275,9 @@ This is an automated message. Please do not reply to this email.
             f"whose profiles more closely match our current requirements.\n\n"
             f"We truly appreciate your interest in joining our organisation and encourage you "
             f"to apply for future opportunities that align with your experience and skills.\n\n"
-            f"Please find below your personalised Gap Analysis Report. This report highlights "
-            f"areas where you can focus your efforts to better align with job market requirements "
-            f"and enhance your career prospects.\n\n"
-            f"{separator}\n"
-            f"GAP ANALYSIS REPORT\n"
-            f"{separator}\n\n"
+            f"Please find below your personalised Gap Analysis, which highlights skill areas "
+            f"you may wish to focus on for future opportunities.\n\n"
             f"{gap_report}\n\n"
-            f"{separator}\n\n"
             f"Wishing you all the best in your job search.\n\n"
             f"Best regards,\n"
             f"Talent Acquisition Team\n"

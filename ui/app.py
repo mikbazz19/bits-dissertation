@@ -55,6 +55,29 @@ def initialize_session_state():
         st.session_state.resume_file_bytes = None
     if 'resume_file_name' not in st.session_state:
         st.session_state.resume_file_name = None
+    # Batch mode state
+    if 'batch_resumes_parsed' not in st.session_state:
+        st.session_state.batch_resumes_parsed = False
+    if 'batch_resumes' not in st.session_state:
+        st.session_state.batch_resumes = []
+    if 'batch_resume_errors' not in st.session_state:
+        st.session_state.batch_resume_errors = {}
+    if 'batch_resume_names' not in st.session_state:
+        st.session_state.batch_resume_names = []
+    if 'batch_resume_file_data' not in st.session_state:
+        st.session_state.batch_resume_file_data = []
+    if 'batch_jobs_parsed' not in st.session_state:
+        st.session_state.batch_jobs_parsed = False
+    if 'batch_job' not in st.session_state:
+        st.session_state.batch_job = None
+    if 'batch_matches_computed' not in st.session_state:
+        st.session_state.batch_matches_computed = False
+    if 'batch_match_results' not in st.session_state:
+        st.session_state.batch_match_results = {}
+    if 'batch_gaps_computed' not in st.session_state:
+        st.session_state.batch_gaps_computed = False
+    if 'batch_gap_analyses' not in st.session_state:
+        st.session_state.batch_gap_analyses = {}
 
 
 def _detect_document_type(text: str) -> str:
@@ -295,18 +318,820 @@ def parse_job_description(text):
         return None, str(e)
 
 
+def parse_job_file(uploaded_file):
+    """Parse a job description from an uploaded file and return (JobDescription, error_string)."""
+    try:
+        _JOB_IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.webp'}
+        parser = ResumeParser()
+        temp_path = Path("temp") / uploaded_file.name
+        temp_path.parent.mkdir(exist_ok=True)
+        with open(temp_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        try:
+            if temp_path.suffix.lower() in _JOB_IMAGE_EXTS:
+                from src.extraction.ocr_processor import OCRProcessor
+                ocr = OCRProcessor()
+                job_text = ocr.extract_text(temp_path)
+            else:
+                job_text = parser.parse_file(temp_path)
+        finally:
+            temp_path.unlink(missing_ok=True)
+
+        if _detect_document_type(job_text) == 'resume':
+            return None, "This file looks like a Resume, not a Job Description."
+
+        return parse_job_description(job_text)
+    except Exception as e:
+        return None, str(e)
+
+
+def _display_parsed_resume(resume):
+    """Display parsed resume information inside a Streamlit container."""
+    st.write("**Personal Information:**")
+    st.write(f"- Name: {resume.name or 'Not found'}")
+    st.write(f"- Email: {resume.email or 'Not found'}")
+    st.write(f"- Phone: {resume.phone or 'Not found'}")
+    if resume.linkedin:
+        _li_url = resume.linkedin if resume.linkedin.startswith(('http://', 'https://')) else 'https://' + resume.linkedin
+        _li_display = re.sub(r'^https?://(www\.)?', '', _li_url).rstrip('/')
+        st.markdown(f"- LinkedIn: [{_li_display}]({_li_url})")
+    else:
+        st.write("- LinkedIn: Not found")
+    if resume.github:
+        _gh_url = resume.github if resume.github.startswith(('http://', 'https://')) else 'https://' + resume.github
+        _gh_display = re.sub(r'^https?://(www\.)?', '', _gh_url).rstrip('/')
+        st.markdown(f"- GitHub: [{_gh_display}]({_gh_url})")
+    else:
+        st.write("- GitHub: Not found")
+    st.write(f"- Total Experience: {resume.total_experience_years} years")
+
+    st.write("**Skills:**")
+    if resume.skills:
+        st.write(", ".join(resume.skills[:20]))
+    else:
+        st.write("No skills detected")
+
+    st.write("**Education:**")
+    if resume.education:
+        for edu in resume.education:
+            degree_label = edu.degree
+            if edu.stream:
+                degree_label += f" in {edu.stream}"
+            parts = [degree_label]
+            if edu.institution:
+                parts.append(edu.institution)
+            if edu.year:
+                parts.append(edu.year)
+            st.write(f"- {', '.join(parts)}")
+    else:
+        st.write("No education information found")
+
+    st.write("**Certifications:**")
+    if resume.certifications:
+        for cert in resume.certifications:
+            st.write(f"- {cert}")
+    else:
+        st.write("No certifications found")
+
+    if resume.co_curricular_activities:
+        st.write("**Co-Curricular Activities:**")
+        for activity in resume.co_curricular_activities:
+            st.write(f"- {activity}")
+
+
+def _display_parsed_job(job):
+    """Display parsed job description information inside a Streamlit container."""
+    st.write(f"**Title:** {job.title}")
+    st.write(f"**Company:** {job.company}")
+    st.write(f"**Required Experience:** {job.required_experience} years")
+    st.write("**Required Skills:**")
+    if job.required_skills:
+        st.write(", ".join(job.required_skills))
+    else:
+        st.write("None identified")
+    st.write("**Preferred Skills:**")
+    if job.preferred_skills:
+        st.write(", ".join(job.preferred_skills))
+    else:
+        st.write("None identified")
+
+
+def _display_match_result(match_result):
+    """Display match result for a single resume-JD pair."""
+    st.metric("Overall Match Score", f"{match_result['overall_score']}%")
+
+    _dec = match_result.get('decision', '')
+    _reason = match_result.get('decision_reason', '')
+    if _dec == "Accept":
+        st.success(f"✅ **Decision: ACCEPT** — {_reason}")
+    elif _dec == "Review":
+        st.warning(f"🔍 **Decision: REVIEW** — {_reason}")
+    else:
+        st.error(f"❌ **Decision: REJECT** — {_reason}")
+
+    hfr = match_result.get('hard_filter_results', {})
+    if hfr:
+        st.write("**Eligibility Check:**")
+        overqualified = not hfr.get('overqualification', {}).get('passed', True)
+        for key, fv in hfr.items():
+            if key == 'experience' and overqualified:
+                continue
+            icon = "✅" if fv['passed'] else "❌"
+            st.write(f"\u00a0\u00a0{icon} {fv['label']}: {fv['detail']}")
+
+    cf = match_result.get('confidence_factor', 1.0)
+    if cf < 1.0:
+        st.caption(f"ℹ️ Confidence factor applied: {cf} (sparse resume data detected)")
+
+    st.write(f"**Match Level:** {match_result['match_level']}")
+
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.metric("Skills", f"{match_result['skill_score']}%")
+    with col_b:
+        st.metric("Experience", f"{match_result['experience_score']}%")
+    with col_c:
+        st.metric("Education", f"{match_result['education_score']}%")
+
+    st.write("**Recommendation:**")
+    st.info(match_result['recommendation'])
+
+    if match_result.get('matched_skills'):
+        st.write("**Matched Skills:**")
+        st.success(", ".join(match_result['matched_skills'][:10]))
+
+    if match_result.get('missing_required_skills'):
+        st.write("**Missing Required Skills:**")
+        st.error(", ".join(match_result['missing_required_skills']))
+
+
+def _display_gap_analysis(gap_analysis, match_result, resume, job, ri, ji):
+    """Display gap analysis for a single resume-JD pair with email provision."""
+    # Skill coverage
+    skill_gaps = gap_analysis['skill_gaps']
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Required Skills Coverage",
+                  f"{skill_gaps['required_skills_coverage']}%")
+    with col2:
+        st.metric("Preferred Skills Coverage",
+                  f"{skill_gaps['preferred_skills_coverage']}%")
+
+    # Experience analysis
+    st.subheader("Experience Analysis")
+    exp_gaps = gap_analysis['experience_gaps']
+    domain = exp_gaps.get('job_domain', 'this role')
+    st.write(f"**Relevant Experience in {domain}:**")
+    st.write(f"- Required: {exp_gaps['required_experience']} years")
+
+    relevant = exp_gaps['relevant_experience']
+    total = exp_gaps['total_experience']
+    if relevant > 0 and relevant != total:
+        st.write(f"- Candidate: {relevant} years  *(overall: {total} years)*")
+    else:
+        st.write(f"- Candidate: {total} years")
+
+    _hfr = match_result.get('hard_filter_results', {})
+    _overqualified = not _hfr.get('overqualification', {}).get('passed', True)
+    if _overqualified:
+        st.warning(f"⚠️ Overqualified: {_hfr['overqualification']['detail']}")
+    elif exp_gaps['meets_requirement']:
+        st.success("✅ Meets experience requirement")
+    else:
+        st.warning(f"⚠️ Gap: {exp_gaps['experience_gap_years']} years")
+
+    # Improvement suggestions
+    st.subheader("Improvement Recommendations")
+    for idx, suggestion in enumerate(gap_analysis['improvement_suggestions'], 1):
+        st.write(f"{idx}. {suggestion}")
+
+    # Priority areas
+    st.subheader("Priority Areas")
+    _area_meta = {
+        "Critical Skill Gaps": {
+            "icon": "🔴",
+            "description": "More than 3 required skills are missing.",
+        },
+        "Experience Requirement": {
+            "icon": "🟠",
+            "description": (
+                f"Experience gap: "
+                f"{exp_gaps.get('experience_gap_years', 0):.1f} yr(s)."
+            ),
+        },
+        "Skill Development": {
+            "icon": "🟡",
+            "description": (
+                f"Required-skills coverage: "
+                f"{skill_gaps.get('required_skills_coverage', 0):.0f}%."
+            ),
+        },
+        "Minor Improvements": {
+            "icon": "🟢",
+            "description": "Strong match. Minor refinements possible.",
+        },
+    }
+    for area in gap_analysis['priority_areas']:
+        meta = _area_meta.get(area, {"icon": "⚪", "description": area})
+        st.markdown(f"{meta['icon']} **{area}** — {meta['description']}")
+
+    # PDF report
+    _pdf_key = f"batch_pdf_{ri}_{ji}"
+    if st.button("📥 Generate PDF Report", key=_pdf_key):
+        try:
+            with st.spinner("Generating PDF..."):
+                report_gen = ReportGenerator()
+                pdf_buffer = report_gen.generate_pdf_report(
+                    resume, job, match_result, gap_analysis
+                )
+                st.download_button(
+                    label="💾 Download PDF",
+                    data=pdf_buffer,
+                    file_name=(
+                        f"report_{resume.name or f'candidate_{ri+1}'}"
+                        f"_{job.title}"
+                        f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                    ),
+                    mime="application/pdf",
+                    key=f"batch_dl_{ri}_{ji}"
+                )
+        except ImportError:
+            st.error("⚠️ PDF generation requires reportlab. Install it with: pip install reportlab")
+        except Exception as e:
+            st.error(f"Error generating report: {str(e)}")
+
+    # Decision display
+    st.markdown("---")
+    overall_score = match_result.get('overall_score', 0)
+    decision = match_result.get('decision', 'Reject')
+
+    if decision == "Accept":
+        st.success(f"✅ **ACCEPT** — Score {overall_score}%")
+    elif decision == "Review":
+        st.warning(f"🔍 **REVIEW** — Score {overall_score}%")
+    else:
+        reason = match_result.get('decision_reason', '')
+        st.error(f"❌ **REJECT** — {reason or f'Score {overall_score}%'}")
+
+    # ── Email section ──
+    if decision in ("Accept", "Reject"):
+        email_label = (
+            "📧 Send Interview Invitation"
+            if decision == "Accept" else
+            "📧 Send Rejection Email with Gap Report"
+        )
+        btn_label = (
+            "📤 Send Email"
+            if decision == "Accept" else
+            "📤 Send Rejection Email"
+        )
+        st.write(f"**{email_label}**")
+        default_email = resume.email or ""
+        recipient = st.text_input(
+            "Recipient Email:",
+            value=default_email,
+            key=f"batch_email_to_{ri}_{ji}",
+            help="One or more addresses separated by commas"
+        )
+        cc = st.text_input(
+            "CC (optional):",
+            key=f"batch_email_cc_{ri}_{ji}",
+            help="One or more CC addresses separated by commas"
+        )
+        if st.button(btn_label, key=f"batch_send_{ri}_{ji}"):
+            if not recipient.strip():
+                st.error("Please enter at least one recipient email address.")
+            elif not st.session_state.sender_email or not st.session_state.sender_password:
+                st.error("⚠️ Please configure email settings in the sidebar first.")
+            else:
+                to_list = [e.strip() for e in recipient.split(',') if e.strip()]
+                cc_list = [e.strip() for e in cc.split(',') if e.strip()]
+                with st.spinner(f"Sending email to {', '.join(to_list)}..."):
+                    try:
+                        email_sender = EmailSender(
+                            smtp_port=st.session_state.smtp_port,
+                            use_ssl=st.session_state.use_ssl,
+                            timeout=30
+                        )
+                        creds = dict(
+                            sender_email=st.session_state.sender_email,
+                            sender_password=st.session_state.sender_password,
+                            cc_email=cc_list or None
+                        )
+                        if decision == "Accept":
+                            result = email_sender.send_shortlist_email(
+                                to_email=to_list,
+                                candidate_name=resume.name or "Candidate",
+                                company_name=job.company or "Our Company",
+                                job_title=job.title or "the applied position",
+                                **creds
+                            )
+                        else:
+                            report_gen = ReportGenerator()
+                            gap_report_text = report_gen.generate_gap_report(
+                                gap_analysis, match_result
+                            )
+                            result = email_sender.send_rejection_email(
+                                to_email=to_list,
+                                candidate_name=resume.name or "Candidate",
+                                company_name=job.company or "Our Company",
+                                job_title=job.title or "the applied position",
+                                gap_report=gap_report_text,
+                                **creds
+                            )
+                        if result['success']:
+                            st.success(f"✅ {result['message']}")
+                        else:
+                            st.error(f"❌ {result['message']}")
+                    except Exception as e:
+                        st.error(f"Error sending email: {str(e)}")
+    else:  # Review
+        st.write("**📧 Send for Manual Review**")
+        st.info(
+            "Forward the candidate's resume to the hiring manager for review. "
+            "A score of 60–75% requires human judgement."
+        )
+        review_to = st.text_input(
+            "Hiring Manager Email:",
+            key=f"batch_review_to_{ri}_{ji}",
+            help="Hiring manager's email address"
+        )
+        review_cc = st.text_input(
+            "CC (optional):",
+            key=f"batch_review_cc_{ri}_{ji}",
+            help="One or more CC addresses separated by commas"
+        )
+        if st.button("📤 Send Review Request", key=f"batch_review_send_{ri}_{ji}"):
+            if not review_to.strip():
+                st.error("Please enter the hiring manager's email.")
+            elif not st.session_state.sender_email or not st.session_state.sender_password:
+                st.error("⚠️ Please configure email settings in the sidebar first.")
+            else:
+                to_list = [e.strip() for e in review_to.split(',') if e.strip()]
+                cc_list = [e.strip() for e in review_cc.split(',') if e.strip()]
+                file_data = st.session_state.get('batch_resume_file_data', [])
+                resume_bytes = file_data[ri][0] if ri < len(file_data) else None
+                resume_fname = file_data[ri][1] if ri < len(file_data) else None
+                match_summary = (
+                    f"Skills: {match_result.get('skill_score', 0)}% | "
+                    f"Experience: {match_result.get('experience_score', 0)}% | "
+                    f"Education: {match_result.get('education_score', 0)}%"
+                )
+                with st.spinner("Sending review request..."):
+                    try:
+                        email_sender = EmailSender(
+                            smtp_port=st.session_state.smtp_port,
+                            use_ssl=st.session_state.use_ssl,
+                            timeout=30
+                        )
+                        result = email_sender.send_review_email(
+                            to_email=to_list,
+                            candidate_name=resume.name or "Candidate",
+                            company_name=job.company or "Our Company",
+                            job_title=job.title or "the applied position",
+                            overall_score=match_result.get('overall_score', 0),
+                            sender_email=st.session_state.sender_email,
+                            sender_password=st.session_state.sender_password,
+                            cc_email=cc_list or None,
+                            resume_bytes=resume_bytes,
+                            resume_filename=resume_fname,
+                            match_summary=match_summary
+                        )
+                        if result['success']:
+                            st.success(f"✅ {result['message']}")
+                        else:
+                            st.error(f"❌ {result['message']}")
+                    except Exception as e:
+                        st.error(f"Error sending email: {str(e)}")
+
+
+def _render_batch_mode(tab1, tab2, tab3):
+    """Render the batch-processing mode UI (multiple resumes vs one JD)."""
+
+    # ── Tab 1: Batch Resume Analysis ──────────────────────────────
+    with tab1:
+        st.header("Batch Resume Analysis")
+
+        uploaded_files = st.file_uploader(
+            "Upload Resumes (max 10)",
+            type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp'],
+            accept_multiple_files=True,
+            key="batch_resume_files"
+        )
+
+        # Clear batch state when files are removed
+        if not uploaded_files and st.session_state.batch_resumes_parsed:
+            st.session_state.batch_resumes_parsed = False
+            st.session_state.batch_resumes = []
+            st.session_state.batch_resume_errors = {}
+            st.session_state.batch_resume_names = []
+            st.session_state.batch_resume_file_data = []
+            st.session_state.batch_matches_computed = False
+            st.session_state.batch_match_results = {}
+            st.session_state.batch_gaps_computed = False
+            st.session_state.batch_gap_analyses = {}
+
+        if uploaded_files:
+            if len(uploaded_files) > 10:
+                st.error("⚠️ Maximum 10 resumes allowed. Please remove some files.")
+            else:
+                st.info(f"📁 {len(uploaded_files)} resume(s) selected")
+
+                if st.button("Parse All Resumes", key="batch_parse_resumes"):
+                    resumes = []
+                    errors = {}
+                    names = []
+                    file_data = []
+
+                    progress = st.progress(0, text="Parsing resumes...")
+                    for i, f in enumerate(uploaded_files):
+                        names.append(f.name)
+                        file_data.append((f.getvalue(), f.name))
+                        resume, error = parse_resume(f, is_file=True)
+                        if error:
+                            resumes.append(None)
+                            errors[i] = error
+                        else:
+                            resumes.append(resume)
+                        progress.progress(
+                            (i + 1) / len(uploaded_files),
+                            text=f"Parsed {i + 1}/{len(uploaded_files)}..."
+                        )
+
+                    st.session_state.batch_resumes = resumes
+                    st.session_state.batch_resume_errors = errors
+                    st.session_state.batch_resume_names = names
+                    st.session_state.batch_resume_file_data = file_data
+                    st.session_state.batch_resumes_parsed = True
+                    # Reset downstream results
+                    st.session_state.batch_matches_computed = False
+                    st.session_state.batch_match_results = {}
+                    st.session_state.batch_gaps_computed = False
+                    st.session_state.batch_gap_analyses = {}
+
+                    ok = sum(1 for r in resumes if r is not None)
+                    st.success(f"✅ {ok}/{len(uploaded_files)} resumes parsed successfully!")
+
+        # Display parsed resumes in collapsible sections
+        if st.session_state.batch_resumes_parsed:
+            st.markdown("---")
+            st.subheader("Parsed Resumes")
+            for i, resume in enumerate(st.session_state.batch_resumes):
+                name = st.session_state.batch_resume_names[i]
+                if resume is None:
+                    with st.expander(f"❌ Resume {i+1}: {name} — Parse Error"):
+                        st.error(st.session_state.batch_resume_errors.get(i, "Unknown error"))
+                else:
+                    label = f"✅ Resume {i+1}: {resume.name or name}"
+                    with st.expander(label):
+                        _display_parsed_resume(resume)
+
+    # ── Tab 2: Job Matching (one JD vs all resumes) ───────────────
+    with tab2:
+        st.header("Job Matching — One JD vs All Resumes")
+
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            st.subheader("Job Description")
+            jd_input_type = st.radio(
+                "Job Input Method:", ["Upload File", "Paste Text"],
+                key="batch_jd_input"
+            )
+
+            if jd_input_type == "Upload File":
+                uploaded_jd_file = st.file_uploader(
+                    "Upload Job Description (PDF, DOCX, TXT, or Image)",
+                    type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp'],
+                    key="batch_jd_file"
+                )
+
+                # Clear JD state when file removed
+                if uploaded_jd_file is None and st.session_state.batch_jobs_parsed:
+                    st.session_state.batch_jobs_parsed = False
+                    st.session_state.batch_job = None
+                    st.session_state.batch_matches_computed = False
+                    st.session_state.batch_match_results = {}
+                    st.session_state.batch_gaps_computed = False
+                    st.session_state.batch_gap_analyses = {}
+
+                if uploaded_jd_file:
+                    _ext = Path(uploaded_jd_file.name).suffix.lower()
+                    if _ext in {'.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.webp'}:
+                        st.info("🖼️ Image file detected — OCR will extract text automatically.")
+
+                if uploaded_jd_file and st.button("Parse Job Description", key="batch_parse_jd"):
+                    with st.spinner("Parsing job description..."):
+                        job, error = parse_job_file(uploaded_jd_file)
+                        if error:
+                            st.error(error)
+                        else:
+                            st.session_state.batch_job = job
+                            st.session_state.batch_jobs_parsed = True
+                            st.session_state.batch_matches_computed = False
+                            st.session_state.batch_match_results = {}
+                            st.session_state.batch_gaps_computed = False
+                            st.session_state.batch_gap_analyses = {}
+                            st.success("✅ Job description parsed!")
+            else:
+                jd_text = st.text_area(
+                    "Enter Job Description:", height=300, key="batch_jd_text"
+                )
+
+                # Clear JD state when text removed
+                if not jd_text and st.session_state.batch_jobs_parsed:
+                    st.session_state.batch_jobs_parsed = False
+                    st.session_state.batch_job = None
+                    st.session_state.batch_matches_computed = False
+                    st.session_state.batch_match_results = {}
+                    st.session_state.batch_gaps_computed = False
+                    st.session_state.batch_gap_analyses = {}
+
+                if jd_text and st.button("Parse Job Description", key="batch_parse_jd"):
+                    if _detect_document_type(jd_text) == 'resume':
+                        st.error(
+                            "This text looks like a Resume, not a Job Description. "
+                            "Please paste JD content here."
+                        )
+                    else:
+                        job, error = parse_job_description(jd_text)
+                        if error:
+                            st.error(f"Error: {error}")
+                        else:
+                            st.session_state.batch_job = job
+                            st.session_state.batch_jobs_parsed = True
+                            st.session_state.batch_matches_computed = False
+                            st.session_state.batch_match_results = {}
+                            st.session_state.batch_gaps_computed = False
+                            st.session_state.batch_gap_analyses = {}
+                            st.success("✅ Job description parsed!")
+
+            # Show parsed JD summary
+            if st.session_state.batch_jobs_parsed and st.session_state.batch_job:
+                st.markdown("---")
+                st.write("**Parsed JD Summary:**")
+                _display_parsed_job(st.session_state.batch_job)
+
+        with col2:
+            st.subheader("Match Results")
+
+            if (st.session_state.batch_resumes_parsed and
+                    st.session_state.batch_jobs_parsed):
+
+                valid_resumes = [
+                    (i, r) for i, r in enumerate(st.session_state.batch_resumes)
+                    if r is not None
+                ]
+                job = st.session_state.batch_job
+
+                if not valid_resumes:
+                    st.warning("No valid resumes to match. Please fix resume parsing errors first.")
+                else:
+                    st.info(
+                        f"Ready to match **{len(valid_resumes)}** resume(s) "
+                        f"against **{job.title}**"
+                    )
+
+                    if st.button("Calculate Match Scores", key="batch_calc_matches"):
+                        match_results = {}
+                        matcher = JobMatcher()
+                        total = len(valid_resumes)
+                        progress = st.progress(0, text="Computing matches...")
+
+                        for idx, (ri, resume) in enumerate(valid_resumes):
+                            match_result = matcher.match_resume_to_job(resume, job)
+                            match_results[ri] = match_result
+                            progress.progress(
+                                (idx + 1) / total,
+                                text=f"Matched {idx + 1}/{total}..."
+                            )
+
+                        st.session_state.batch_match_results = match_results
+                        st.session_state.batch_matches_computed = True
+                        st.session_state.batch_gaps_computed = False
+                        st.session_state.batch_gap_analyses = {}
+                        st.success(f"✅ {total} match score(s) computed!")
+
+                # Display match results in collapsible sections
+                if st.session_state.batch_matches_computed:
+                    st.markdown("---")
+                    for ri, m_result in st.session_state.batch_match_results.items():
+                        resume = st.session_state.batch_resumes[ri]
+                        r_name = resume.name or st.session_state.batch_resume_names[ri]
+                        score = m_result['overall_score']
+                        decision = m_result.get('decision', '')
+                        icon = {"Accept": "✅", "Review": "🔍"}.get(decision, "❌")
+                        label = f"{icon} {r_name} — {score}% ({decision})"
+                        with st.expander(label):
+                            _display_match_result(m_result)
+            else:
+                st.info(
+                    "Please parse resumes (Resume Analysis tab) and "
+                    "a job description (left panel) to perform matching."
+                )
+
+    # ── Tab 3: Batch Gap Analysis ─────────────────────────────────
+    with tab3:
+        st.header("Batch Gap Analysis")
+
+        if not st.session_state.batch_matches_computed:
+            st.info(
+                "Please complete batch resume parsing, JD parsing, and "
+                "match score calculation first."
+            )
+        else:
+            if st.button("Generate All Gap Analyses", key="batch_gen_gaps"):
+                gap_analyses = {}
+                match_results = st.session_state.batch_match_results
+                job = st.session_state.batch_job
+                analyzer = GapAnalyzer()
+
+                total = len(match_results)
+                progress = st.progress(0, text="Generating gap analyses...")
+                done = 0
+
+                for ri in match_results:
+                    resume = st.session_state.batch_resumes[ri]
+                    gap = analyzer.analyze_gaps(resume, job)
+                    gap_analyses[ri] = gap
+                    done += 1
+                    progress.progress(
+                        done / total,
+                        text=f"Analyzed {done}/{total}..."
+                    )
+
+                st.session_state.batch_gap_analyses = gap_analyses
+                st.session_state.batch_gaps_computed = True
+                st.success(f"✅ {total} gap analysis report(s) generated!")
+
+            if st.session_state.batch_gaps_computed:
+                st.markdown("---")
+                job = st.session_state.batch_job
+                for ri, gap in st.session_state.batch_gap_analyses.items():
+                    resume = st.session_state.batch_resumes[ri]
+                    m_result = st.session_state.batch_match_results[ri]
+                    r_name = resume.name or st.session_state.batch_resume_names[ri]
+                    label = f"📊 {r_name} vs {job.title}"
+                    with st.expander(label):
+                        _display_gap_analysis(gap, m_result, resume, job, ri, 0)
+
+
+def _render_sidebar():
+    """Render the sidebar (shared by Single and Batch modes)."""
+    with st.sidebar:
+        st.header("About")
+        st.write("""
+        This AI-powered system helps automate resume screening by:
+        - Parsing resumes in multiple formats (PDF, DOCX, TXT)
+        - **OCR support** for image & scanned resumes (PNG, JPG, TIFF, BMP)
+        - Extracting skills, experience, and qualifications
+        - Matching candidates with job requirements
+        - Identifying skill gaps
+        - Providing actionable feedback
+        - Emailing gap analysis reports
+        """)
+
+        st.header("How to Use")
+        st.write("""
+        1. **Resume Analysis**: Upload or paste a resume (PDF/DOCX/TXT or image)
+        2. **Job Matching**: Upload or enter a job description (same formats)
+        3. **Gap Analysis**: View detailed skill gaps and improvement suggestions
+
+        *Image files (PNG, JPG, TIFF, BMP) are processed via OCR automatically.*
+        """)
+
+        st.markdown("---")
+        st.header("📧 Email Configuration")
+        st.info("Configure your email settings to send gap analysis reports to candidates.")
+
+        sender_email = st.text_input(
+            "Sender Email",
+            value=st.session_state.sender_email,
+            type="default",
+            placeholder="your-email@gmail.com",
+            help="Email address to send from"
+        )
+
+        sender_password = st.text_input(
+            label="Password/App Password",
+            value=st.session_state.sender_password,
+            type="password"
+        )
+        st.write("**SMTP Configuration**")
+        col1, col2 = st.columns(2)
+        with col1:
+            smtp_option = st.selectbox(
+                "Connection Type",
+                options=["Port 587 (TLS)", "Port 465 (SSL)"],
+                index=0 if st.session_state.smtp_port == 587 else 1,
+                help="Try Port 465 (SSL) if Port 587 fails due to firewall/network issues"
+            )
+
+        with col2:
+            if smtp_option == "Port 587 (TLS)":
+                st.session_state.smtp_port = 587
+                st.session_state.use_ssl = False
+            else:
+                st.session_state.smtp_port = 465
+                st.session_state.use_ssl = True
+
+            st.metric("Port", st.session_state.smtp_port)
+
+        col_save, col_test = st.columns(2)
+        with col_save:
+            if st.button("💾 Save Config", use_container_width=True):
+                st.session_state.sender_email = sender_email
+                st.session_state.sender_password = sender_password
+                st.success("✅ Configuration saved!")
+
+        with col_test:
+            if st.button("🔌 Test Connection", use_container_width=True):
+                if not sender_email or not sender_password:
+                    st.error("Please enter email and password first")
+                else:
+                    with st.spinner("Testing connection..."):
+                        email_sender = EmailSender(
+                            smtp_port=st.session_state.smtp_port,
+                            use_ssl=st.session_state.use_ssl,
+                            timeout=30
+                        )
+                        result = email_sender.test_connection(sender_email, sender_password)
+                        if result['success']:
+                            st.success(f"✅ {result['message']}")
+                            st.session_state.sender_email = sender_email
+                            st.session_state.sender_password = sender_password
+                        else:
+                            st.error(f"❌ {result['message']}")
+
+        with st.expander("ℹ️ Gmail Setup Instructions"):
+            st.write("""
+            **For Gmail users:**
+            1. Go to your Google Account settings
+            2. Enable 2-Step Verification
+            3. Go to Security > 2-Step Verification > App passwords
+            4. Generate a new app password
+            5. Use that password here (not your regular Gmail password)
+
+            **If connection fails (WinError 10060):**
+            - Try switching to Port 465 (SSL)
+            - Check Windows Firewall settings
+            - Temporarily disable antivirus
+            - Try from a different network
+            - Some ISPs block SMTP ports
+            """)
+
+        with st.expander("🔧 Troubleshooting"):
+            st.write("""
+            **Common Issues:**
+
+            1. **Connection Timeout (WinError 10060)**
+               - Your firewall/antivirus may be blocking the connection
+               - Try Port 465 (SSL) instead of Port 587 (TLS)
+               - Check if your ISP blocks SMTP ports
+
+            2. **Authentication Failed**
+               - Use App Password, not regular password for Gmail
+               - Ensure 2-Step Verification is enabled
+
+            3. **Still not working?**
+               - Try from a different network (mobile hotspot)
+               - Check Windows Defender Firewall settings
+               - Contact your IT department if on corporate network
+            """)
+
+
 def main():
     """Main application"""
     initialize_session_state()
     
     st.title("🤖 AI-Powered Resume Screening System")
     st.markdown("### Intelligent Resume Analysis and Job Matching")
-    
+
     st.markdown("---")
-    
+
     # Tabs for different functionalities
     tab1, tab2, tab3 = st.tabs(["📄 Resume Analysis", "🔍 Job Matching", "📊 Gap Analysis"])
-    
+
+    # ── Mode selector inside Resume tab ──
+    with tab1:
+        mode = st.radio(
+            "Processing Mode:",
+            ["Single", "Batch"],
+            horizontal=True,
+            key="processing_mode",
+            help="Single: one resume, one JD.  Batch: up to 10 resumes against one JD."
+        )
+        st.markdown("---")
+
+    if mode == "Batch":
+        _render_batch_mode(tab1, tab2, tab3)
+        _render_sidebar()
+        return
+
+    # ═══════════════════════════════════════════════════════════════
+    #  SINGLE MODE — original flow (unchanged)
+    # ═══════════════════════════════════════════════════════════════
+
     # Tab 1: Resume Analysis
     with tab1:
         st.header("Resume Analysis")
@@ -418,6 +1243,11 @@ def main():
                         st.write(f"- {cert}")
                 else:
                     st.write("No certifications found")
+
+                if resume.co_curricular_activities:
+                    st.write("**Co-Curricular Activities:**")
+                    for activity in resume.co_curricular_activities:
+                        st.write(f"- {activity}")
             else:
                 st.info("Upload/Paste and parse a resume to see extracted information")
     
@@ -812,7 +1642,7 @@ def main():
                                         )
                                     else:
                                         report_gen = ReportGenerator()
-                                        gap_report_text = report_gen.generate_gap_report(gap_analysis)
+                                        gap_report_text = report_gen.generate_gap_report(gap_analysis, match_result)
                                         result = email_sender.send_rejection_email(
                                             to_email=to_list,
                                             candidate_name=resume.name or "Candidate",
@@ -907,131 +1737,7 @@ def main():
         else:
             st.info("Please complete resume and job matching analysis first")
 
-    # Sidebar with information
-    with st.sidebar:
-        st.header("About")
-        st.write("""
-        This AI-powered system helps automate resume screening by:
-        - Parsing resumes in multiple formats (PDF, DOCX, TXT)
-        - **OCR support** for image & scanned resumes (PNG, JPG, TIFF, BMP)
-        - Extracting skills, experience, and qualifications
-        - Matching candidates with job requirements
-        - Identifying skill gaps
-        - Providing actionable feedback
-        - Emailing gap analysis reports
-        """)
-        
-        st.header("How to Use")
-        st.write("""
-        1. **Resume Analysis**: Upload or paste a resume (PDF/DOCX/TXT or image)
-        2. **Job Matching**: Upload or enter a job description (same formats)
-        3. **Gap Analysis**: View detailed skill gaps and improvement suggestions
-        
-        *Image files (PNG, JPG, TIFF, BMP) are processed via OCR automatically.*
-        """)
-        
-        st.markdown("---")
-        st.header("📧 Email Configuration")
-        st.info("Configure your email settings to send gap analysis reports to candidates.")
-        
-        sender_email = st.text_input(
-            "Sender Email",
-            value=st.session_state.sender_email,
-            type="default",
-            placeholder="your-email@gmail.com",
-            help="Email address to send from"
-        )
-        
-        sender_password = st.text_input(
-            label="Password/App Password",
-            value=st.session_state.sender_password,
-            type="password"
-        )
-        st.write("**SMTP Configuration**")
-        col1, col2 = st.columns(2)
-        with col1:
-            smtp_option = st.selectbox(
-                "Connection Type",
-                options=["Port 587 (TLS)", "Port 465 (SSL)"],
-                index=0 if st.session_state.smtp_port == 587 else 1,
-                help="Try Port 465 (SSL) if Port 587 fails due to firewall/network issues"
-            )
-        
-        with col2:
-            if smtp_option == "Port 587 (TLS)":
-                st.session_state.smtp_port = 587
-                st.session_state.use_ssl = False
-            else:
-                st.session_state.smtp_port = 465
-                st.session_state.use_ssl = True
-            
-            st.metric("Port", st.session_state.smtp_port)
-        
-        col_save, col_test = st.columns(2)
-        with col_save:
-            if st.button("💾 Save Config", use_container_width=True):
-                st.session_state.sender_email = sender_email
-                st.session_state.sender_password = sender_password
-                st.success("✅ Configuration saved!")
-        
-        with col_test:
-            if st.button("🔌 Test Connection", use_container_width=True):
-                if not sender_email or not sender_password:
-                    st.error("Please enter email and password first")
-                else:
-                    with st.spinner("Testing connection..."):
-                        email_sender = EmailSender(
-                            smtp_port=st.session_state.smtp_port,
-                            use_ssl=st.session_state.use_ssl,
-                            timeout=30
-                        )
-                        result = email_sender.test_connection(sender_email, sender_password)
-                        if result['success']:
-                            st.success(f"✅ {result['message']}")
-                            st.session_state.sender_email = sender_email
-                            st.session_state.sender_password = sender_password
-                        else:
-                            st.error(f"❌ {result['message']}")
-        
-        with st.expander("ℹ️ Gmail Setup Instructions"):
-            st.write("""
-            **For Gmail users:**
-            1. Go to your Google Account settings
-            2. Enable 2-Step Verification
-            3. Go to Security > 2-Step Verification > App passwords
-            4. Generate a new app password
-            5. Use that password here (not your regular Gmail password)
-            
-            **If connection fails (WinError 10060):**
-            - Try switching to Port 465 (SSL)
-            - Check Windows Firewall settings
-            - Temporarily disable antivirus
-            - Try from a different network
-            - Some ISPs block SMTP ports
-            """)
-        
-        with st.expander("🔧 Troubleshooting"):
-            st.write("""
-            **Common Issues:**
-            
-            1. **Connection Timeout (WinError 10060)**
-               - Your firewall/antivirus may be blocking the connection
-               - Try Port 465 (SSL) instead of Port 587 (TLS)
-               - Check if your ISP blocks SMTP ports
-            
-            2. **Authentication Failed**
-               - Use App Password, not regular password for Gmail
-               - Ensure 2-Step Verification is enabled
-            
-            3. **Still not working?**
-               - Try from a different network (mobile hotspot)
-               - Check Windows Defender Firewall settings
-               - Contact your IT department if on corporate network
-            2. Enable 2-Step Verification
-            3. Go to Security > 2-Step Verification > App passwords
-            4. Generate a new app password
-            5. Use that password here (not your regular Gmail password)
-            """)
+    _render_sidebar()
 
 
 if __name__ == "__main__":

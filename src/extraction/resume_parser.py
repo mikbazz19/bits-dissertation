@@ -241,6 +241,9 @@ def extract_resume_info(text: str, ocr_sections: Optional[Dict] = None) -> Resum
     else:
         certifications = entities.get("certifications", [])
 
+    # --- Co-curricular activities ---
+    co_curricular = entity_extractor.extract_co_curricular(text)
+
     return Resume(
         raw_text=text,
         name=entities.get("name"),
@@ -252,5 +255,6 @@ def extract_resume_info(text: str, ocr_sections: Optional[Dict] = None) -> Resum
         education=education_objs,
         experience=experiences,
         certifications=certifications,
+        co_curricular_activities=co_curricular,
         total_experience_years=total_years,
     )

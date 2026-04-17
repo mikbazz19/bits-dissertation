@@ -39,6 +39,7 @@ class Resume:
     education: List[Education] = field(default_factory=list)
     experience: List[Experience] = field(default_factory=list)
     certifications: List[str] = field(default_factory=list)
+    co_curricular_activities: List[str] = field(default_factory=list)
     total_experience_years: float = 0.0
     parsed_data: Dict = field(default_factory=dict)
     
@@ -69,5 +70,6 @@ class Resume:
                 } for exp in self.experience
             ],
             'certifications': self.certifications,
+            'co_curricular_activities': self.co_curricular_activities,
             'total_experience_years': self.total_experience_years
         }

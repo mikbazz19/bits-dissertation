@@ -79,21 +79,30 @@ class EntityExtractor:
             name_part = self._HONORIFIC_RE.sub('', line).strip()
 
             words = name_part.split()
-            if len(words) < 2 or len(words) > 5:
+            if len(words) < 2 or len(words) > 6:
                 continue
 
             # Title-case with unicode support and optional hyphens.
             # Require at least one lowercase letter so all-caps falls through.
             if (re.match(
-                    r'^[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F\-]*'
-                    r'(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u017F\-]*)+$',
+                    r'^[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u024F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u024F\-]*'
+                    r'(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u024F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u024F\-]*)+$',
                     name_part
                 ) and any(c.islower() for c in name_part)):
                 return line
 
             # All-caps names (e.g. "SARAH KRISHNAMURTHY" or after stripping "DR.")
-            if re.match(r'^[A-Z][A-Z\s\-]+$', name_part) and len(words) >= 2:
+            # Support non-ASCII uppercase: check all non-space/hyphen chars are uppercase.
+            _stripped = name_part.replace(' ', '').replace('-', '')
+            if _stripped.isalpha() and _stripped == _stripped.upper() and len(words) >= 2:
                 return line.title()
+
+            # Mixed-case Unicode names (some words uppercase, some title-case)
+            if all(
+                re.match(r'^[A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u024F][A-Za-zÀ-ÖØ-öø-ÿ\u0100-\u024F\-]*$', w)
+                for w in words
+            ):
+                return line
 
         return None
     
@@ -183,7 +192,7 @@ class EntityExtractor:
         cert_section_pattern = (
             r'(?:^|\n)[ \t]*(?:CERTIFICATIONS?|Licen[sc]es?\s*(?:&|and)\s*Certifications?|'
             r'Professional\s+Certifications?|Accreditations?)'
-            r'[ \t]*\n(.*?)(?=\n[ \t]*[A-Z][A-Z\s]{2,}\n|\Z)'
+            r'[ \t]*\n(.*?)(?=\n[ \t]*[A-Z][A-Z0-9 \t\-]{3,}\n|\Z)'
         )
         sec_match = re.search(cert_section_pattern, text, re.DOTALL | re.IGNORECASE)
 
@@ -214,7 +223,26 @@ class EntityExtractor:
                 _add(candidate)
 
         return certifications[:15]
-    
+
+    def extract_co_curricular(self, text: str) -> List[str]:
+        """Extract co-curricular / extracurricular activities from a dedicated section."""
+        pattern = (
+            r'(?:^|\n)[ \t]*(?:CO[-\s]?CURRICULAR\s*(?:ACTIVITIES?)?'
+            r'|EXTRA[-\s]?CURRICULAR\s*(?:ACTIVITIES?)?'
+            r'|ACTIVITIES?\s*(?:&|and)\s*INTERESTS?'
+            r'|ACHIEVEMENTS?\s*(?:&|and)\s*ACTIVITIES?)'
+            r'[ \t]*\n(.*?)(?=\n[ \t]*[A-Z][A-Z\s]{2,}\n|\Z)'
+        )
+        match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+        if not match:
+            return []
+        activities: List[str] = []
+        for line in match.group(1).splitlines():
+            line = re.sub(r'^[\s\u2022\-\u2013*\u25ba\u25aa\d\.]+', '', line).strip()
+            if len(line) > 4:
+                activities.append(line)
+        return activities[:20]
+
     def extract_linkedin(self, text: str) -> Optional[str]:
         """Extract LinkedIn profile URL"""
         pattern = r'(?:linkedin\.com/in/|linkedin\.com/pub/)[\w-]+'

@@ -78,6 +78,242 @@ def initialize_session_state():
         st.session_state.batch_gaps_computed = False
     if 'batch_gap_analyses' not in st.session_state:
         st.session_state.batch_gap_analyses = {}
+    if 'theme' not in st.session_state:
+        st.session_state.theme = 'Dark'
+
+
+def _apply_theme():
+    """Inject CSS to apply the selected theme."""
+    if st.session_state.theme == 'Light':
+        st.markdown("""
+        <style>
+        /* ── Light theme overrides ── */
+        :root {
+            color-scheme: light;
+        }
+        /* Global background */
+        [data-testid="stAppViewContainer"],
+        [data-testid="stApp"] {
+            background-color: #ffffff;
+            color: #1a1a2e;
+        }
+        [data-testid="stSidebar"] {
+            background-color: #f0f2f6;
+        }
+        [data-testid="stHeader"] {
+            background-color: #ffffff;
+        }
+
+        /* Force ALL text inside main area and sidebar to dark */
+        [data-testid="stAppViewContainer"] *,
+        [data-testid="stSidebar"] * {
+            color: #1a1a2e !important;
+        }
+
+        /* Tabs active highlight */
+        [data-testid="stTabs"] button[aria-selected="true"] {
+            border-bottom-color: #4a6cf7 !important;
+            color: #4a6cf7 !important;
+        }
+
+        /* Expanders */
+        [data-testid="stExpander"] {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        /* Text inputs, textareas, selects – dark text on white */
+        input, textarea, select {
+            color: #1a1a2e !important;
+            background-color: #ffffff !important;
+        }
+        [data-baseweb="input"] input,
+        [data-baseweb="textarea"] textarea,
+        [data-baseweb="select"] * {
+            color: #1a1a2e !important;
+        }
+        /* Input containers – white background */
+        [data-baseweb="input"],
+        [data-baseweb="base-input"] {
+            background-color: #ffffff !important;
+            border-color: #dee2e6 !important;
+        }
+        /* Password toggle (eye icon) button – visible on white */
+        [data-testid="stPasswordInput"] button,
+        [data-baseweb="input"] button {
+            color: #6c757d !important;
+            background-color: #ffffff !important;
+            border: none !important;
+        }
+        [data-testid="stPasswordInput"] button:hover,
+        [data-testid="stPasswordInput"] button:focus,
+        [data-baseweb="input"] button:hover,
+        [data-baseweb="input"] button:focus {
+            color: #6c757d !important;
+            background-color: #ffffff !important;
+        }
+        /* Selectbox / dropdown – light background with dark text */
+        [data-baseweb="select"] > div {
+            background-color: #ffffff !important;
+            border-color: #dee2e6 !important;
+            color: #1a1a2e !important;
+        }
+        [data-baseweb="select"] > div:hover,
+        [data-baseweb="select"] > div:focus-within {
+            background-color: #ffffff !important;
+            border-color: #dee2e6 !important;
+        }
+        /* Selectbox arrow icon */
+        [data-baseweb="select"] svg {
+            color: #6c757d !important;
+            fill: #6c757d !important;
+        }
+        /* Dropdown menu (popover) */
+        [data-baseweb="popover"],
+        [data-baseweb="menu"],
+        [role="listbox"] {
+            background-color: #ffffff !important;
+            color: #1a1a2e !important;
+        }
+        [data-baseweb="menu"] li,
+        [role="option"] {
+            color: #1a1a2e !important;
+            background-color: #ffffff !important;
+        }
+        [data-baseweb="menu"] li:hover,
+        [role="option"]:hover {
+            background-color: #f0f2f6 !important;
+            color: #1a1a2e !important;
+        }
+
+        /* File uploader */
+        [data-testid="stFileUploader"] * {
+            color: #1a1a2e !important;
+        }
+        [data-testid="stFileUploader"] section {
+            background-color: #f0f2f6;
+            border-color: #dee2e6;
+        }
+
+        /* Browse files button – white text on dark background */
+        [data-testid="stFileUploader"] button,
+        [data-testid="stFileUploaderDropzone"] button {
+            color: #ffffff !important;
+            background-color: #7B9BF7 !important;
+            border-color: #7B9BF7 !important;
+        }
+        [data-testid="stFileUploader"] button:hover,
+        [data-testid="stFileUploaderDropzone"] button:hover {
+            color: #ffffff !important;
+            background-color: #7B9BF7 !important;
+            border-color: #7B9BF7 !important;
+        }
+
+        /* All action buttons – white text on blue background, stable on hover */
+        .stButton button,
+        .stDownloadButton button {
+            color: #ffffff !important;
+            background-color: #7B9BF7 !important;
+            border-color: #7B9BF7 !important;
+        }
+        .stButton button:hover,
+        .stButton button:focus,
+        .stButton button:active,
+        .stDownloadButton button:hover,
+        .stDownloadButton button:focus,
+        .stDownloadButton button:active {
+            color: #ffffff !important;
+            background-color: #7B9BF7 !important;
+            border-color: #7B9BF7 !important;
+            opacity: 1 !important;
+        }
+        /* Primary buttons (type="primary") – slightly deeper blue */
+        .stButton button[kind="primary"],
+        .stDownloadButton button[kind="primary"] {
+            background-color: #6B8DF0 !important;
+            border-color: #6B8DF0 !important;
+            color: #ffffff !important;
+        }
+        .stButton button[kind="primary"]:hover,
+        .stDownloadButton button[kind="primary"]:hover {
+            background-color: #6B8DF0 !important;
+            border-color: #6B8DF0 !important;
+            color: #ffffff !important;
+        }
+
+        /* Success / error / warning / info alert boxes – keep their own text color */
+        [data-testid="stAlert"] * {
+            color: inherit !important;
+        }
+
+        /* Toggle / switch track */
+        [data-testid="stToggle"] * {
+            color: #1a1a2e !important;
+        }
+
+        /* Progress bar – green fill */
+        .stProgress > div > div {
+            color: #1a1a2e !important;
+        }
+        /* Target the filled portion of the progress bar */
+        .stProgress > div > div > div > div,
+        .stProgress [role="progressbar"] > div,
+        .stProgress [role="progressbar"] > div > div,
+        [data-testid="stProgress"] > div > div > div > div {
+            background-color: #2ea043 !important;
+            background-image: none !important;
+        }
+        /* Fallback: any deeply nested div in progress with inline width style */
+        .stProgress div[style*="width:"][style*="%"] {
+            background-color: #2ea043 !important;
+            background-image: none !important;
+        }
+
+        /* Horizontal rules / dividers – dark line for light mode */
+        hr, [data-testid="stSeparator"] {
+            border-color: #1a1a2e !important;
+            background-color: #1a1a2e !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <style>
+        /* ── Dark theme overrides ── */
+        :root {
+            color-scheme: dark;
+        }
+        [data-testid="stAppViewContainer"],
+        [data-testid="stApp"] {
+            background-color: #0e1117;
+            color: #fafafa;
+        }
+        [data-testid="stSidebar"] {
+            background-color: #1a1a2e;
+            color: #fafafa;
+        }
+        [data-testid="stHeader"] {
+            background-color: #0e1117;
+        }
+        /* Expanders */
+        [data-testid="stExpander"] {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+        }
+        /* Progress bar – green fill */
+        .stProgress > div > div > div > div,
+        .stProgress [role="progressbar"] > div,
+        .stProgress [role="progressbar"] > div > div,
+        [data-testid="stProgress"] > div > div > div > div {
+            background-color: #2ea043 !important;
+            background-image: none !important;
+        }
+        .stProgress div[style*="width:"][style*="%"] {
+            background-color: #2ea043 !important;
+            background-image: none !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
 
 def _detect_document_type(text: str) -> str:
@@ -537,6 +773,8 @@ def _display_gap_analysis(gap_analysis, match_result, resume, job, ri, ji):
 
     # PDF report
     _pdf_key = f"batch_pdf_{ri}_{ji}"
+    _pdf_state_key = f"batch_pdf_data_{ri}_{ji}"
+
     if st.button("📥 Generate PDF Report", key=_pdf_key):
         try:
             with st.spinner("Generating PDF..."):
@@ -544,21 +782,29 @@ def _display_gap_analysis(gap_analysis, match_result, resume, job, ri, ji):
                 pdf_buffer = report_gen.generate_pdf_report(
                     resume, job, match_result, gap_analysis
                 )
-                st.download_button(
-                    label="💾 Download PDF",
-                    data=pdf_buffer,
-                    file_name=(
+                st.session_state[_pdf_state_key] = {
+                    'data': pdf_buffer,
+                    'file_name': (
                         f"report_{resume.name or f'candidate_{ri+1}'}"
                         f"_{job.title}"
                         f"_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                     ),
-                    mime="application/pdf",
-                    key=f"batch_dl_{ri}_{ji}"
-                )
+                }
         except ImportError:
             st.error("⚠️ PDF generation requires reportlab. Install it with: pip install reportlab")
         except Exception as e:
             st.error(f"Error generating report: {str(e)}")
+
+    if _pdf_state_key in st.session_state:
+        _pdf_info = st.session_state[_pdf_state_key]
+        st.download_button(
+            label="💾 Download PDF",
+            data=_pdf_info['data'],
+            file_name=_pdf_info['file_name'],
+            mime="application/pdf",
+            key=f"batch_dl_{ri}_{ji}"
+        )
+        st.success("✅ PDF report generated successfully!")
 
     # Decision display
     st.markdown("---")
@@ -972,13 +1218,27 @@ def _render_batch_mode(tab1, tab2, tab3):
                     m_result = st.session_state.batch_match_results[ri]
                     r_name = resume.name or st.session_state.batch_resume_names[ri]
                     label = f"📊 {r_name} vs {job.title}"
-                    with st.expander(label):
+                    # Keep expander open if user generated a PDF inside it
+                    _is_expanded = f"batch_pdf_data_{ri}_0" in st.session_state
+                    with st.expander(label, expanded=_is_expanded):
                         _display_gap_analysis(gap, m_result, resume, job, ri, 0)
 
 
 def _render_sidebar():
     """Render the sidebar (shared by Single and Batch modes)."""
     with st.sidebar:
+        # ── Theme toggle at the very top ──
+        st.toggle(
+            "☀️ Light Mode" if st.session_state.theme == 'Dark' else "🌙 Dark Mode",
+            value=(st.session_state.theme == 'Light'),
+            key="_theme_toggle",
+            on_change=lambda: st.session_state.update(
+                theme='Light' if st.session_state._theme_toggle else 'Dark'
+            ),
+            help="Switch between Light and Dark themes"
+        )
+        st.markdown("---")
+
         st.header("About")
         st.write("""
         This AI-powered system helps automate resume screening by:
@@ -1103,6 +1363,7 @@ def _render_sidebar():
 def main():
     """Main application"""
     initialize_session_state()
+    _apply_theme()
     
     st.title("🤖 AI-Powered Resume Screening System")
     st.markdown("### Intelligent Resume Analysis and Job Matching")

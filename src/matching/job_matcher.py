@@ -10,12 +10,14 @@ from .similarity import SimilarityCalculator
 
 class JobMatcher:
     """Match candidate resumes with job descriptions"""
-    
-    def __init__(self):
+
+    def __init__(self, skill_weight: float = None, experience_weight: float = None,
+                 education_weight: float = None):
         self.similarity_calc = SimilarityCalculator()
-        self.skill_weight = Config.SKILLS_WEIGHT
-        self.experience_weight = Config.EXPERIENCE_WEIGHT
-        self.education_weight = Config.EDUCATION_WEIGHT
+        # Allow caller to override weights; fall back to Config defaults
+        self.skill_weight = skill_weight if skill_weight is not None else Config.SKILLS_WEIGHT
+        self.experience_weight = experience_weight if experience_weight is not None else Config.EXPERIENCE_WEIGHT
+        self.education_weight = education_weight if education_weight is not None else Config.EDUCATION_WEIGHT
     
     def match_resume_to_job(self, resume: Resume, job: JobDescription) -> Dict:
         """Calculate match score between resume and job description."""

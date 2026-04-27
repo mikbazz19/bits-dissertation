@@ -23,6 +23,8 @@ from src.models.job import JobDescription
 from src.matching.job_matcher import JobMatcher
 from src.analysis.gap_analyzer import GapAnalyzer
 from src.analysis.report_generator import ReportGenerator
+from src.analysis.analytics import ScreeningAnalytics
+from src.analysis.resume_quality_scorer import ResumeQualityScorer
 from src.utils.config import Config
 from src.utils.email_sender import EmailSender
 from src.extraction.parser import IMAGE_EXTENSIONS
@@ -80,6 +82,13 @@ def initialize_session_state():
         st.session_state.batch_gap_analyses = {}
     if 'theme' not in st.session_state:
         st.session_state.theme = 'Dark'
+    # Matching weights (default 50/30/20)
+    if 'weight_skills' not in st.session_state:
+        st.session_state.weight_skills = 50
+    if 'weight_experience' not in st.session_state:
+        st.session_state.weight_experience = 30
+    if 'weight_education' not in st.session_state:
+        st.session_state.weight_education = 20
 
 
 def _apply_theme():
@@ -120,6 +129,23 @@ def _apply_theme():
         [data-testid="stExpander"] {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
+        }
+        /* Expander header – keep text dark and background light on all states */
+        [data-testid="stExpander"] summary,
+        [data-testid="stExpander"] summary:hover,
+        [data-testid="stExpander"] summary:focus,
+        [data-testid="stExpander"] summary:active,
+        [data-testid="stExpander"] > div:first-child,
+        [data-testid="stExpander"] > div:first-child:hover,
+        [data-testid="stExpander"] > div:first-child:focus {
+            background-color: #f8f9fa !important;
+            color: #1a1a2e !important;
+        }
+        /* Expander header SVG arrow icon */
+        [data-testid="stExpander"] summary svg,
+        [data-testid="stExpander"] summary:hover svg {
+            fill: #1a1a2e !important;
+            stroke: #1a1a2e !important;
         }
 
         /* Text inputs, textareas, selects – dark text on white */
@@ -328,19 +354,24 @@ def _detect_document_type(text: str) -> str:
 
     jd_signals = [
         r'job\s+description', r'job\s+posting', r'job\s+title', r'about\s+the\s+role',
-        r'about\s+this\s+role',
+        r'about\s+this\s+role', r'position\s+summary',
         r"we(?:\s+are|'re)\s+(?:looking|seeking|hiring)",  # "we are looking" + "we're looking"
         r'you\s+will\s+be\s+responsible', r'key\s+responsibilities',
-        r'responsibilities', r'requirements', r'qualifications',
+        r'job\s+responsibilities', r'role\s+responsibilities',
         r"what\s+you'?ll\s+(?:do|work|build)", r"what\s+we'?re\s+looking\s+for",
-        r'the\s+ideal\s+candidate', r'required\s+qualifications?',
-        r'preferred\s+qualifications?',
-        r'required\s+skills?', r'preferred\s+skills?',   # "REQUIRED SKILLS / PREFERRED SKILLS"
-        r'minimum\s+\d',                                 # "Minimum 3 years..."
-        r'minimum\s+(?:experience|qualifications?)',
-        r'equal\s+opportunity\s+employer', r'salary\s+range', r'compensation',
-        r'benefits\s+include', r'apply\s+now', r'apply\s+today',
+        r'the\s+ideal\s+candidate', r'ideal\s+candidate\s+will',
+        r'required\s+qualifications?', r'required\s+experience',
+        r'preferred\s+qualifications?', r'preferred\s+experience',
+        r'required\s+skills?', r'preferred\s+skills?',
+        r'minimum\s+qualifications?', r'minimum\s+requirements?',
+        r'minimum\s+\d+\s*\+?\s*years',  # "Minimum 3 years" / "Minimum 3+ years"
+        r'equal\s+opportunity\s+employer', r'salary\s+range', r'compensation\s+package',
+        r'benefits\s+include', r'apply\s+now', r'apply\s+today', r'apply\s+online',
         r'we\s+offer', r'what\s+you\s+bring', r'nice\s+to\s+have',
+        r'join\s+our\s+team', r'we\s+are\s+hiring', r'hiring\s+for',
+        r'send\s+your\s+(?:resume|cv)', r'submit\s+your\s+(?:application|resume)',
+        r'company\s+overview', r'about\s+(?:the\s+)?company',
+        r'location\s*:', r'job\s+location', r'work\s+location',
     ]
     resume_signals = [
         r'curriculum\s+vitae', r'professional\s+summary', r'career\s+objective',
@@ -356,9 +387,17 @@ def _detect_document_type(text: str) -> str:
     jd_score = sum(1 for p in jd_signals if re.search(p, lower))
     resume_score = sum(1 for p in resume_signals if re.search(p, lower))
 
-    if jd_score >= 2 and jd_score > resume_score:
+    # If JD signals are strong (3+) and outweigh resume signals, it's a JD
+    if jd_score >= 3 and jd_score > resume_score:
         return 'jd'
+    # If there are 2+ JD signals and no clear resume signals, likely a JD
+    if jd_score >= 2 and resume_score == 0:
+        return 'jd'
+    # If resume signals are present and equal or more than JD signals, it's a resume
     if resume_score >= 2 and resume_score >= jd_score:
+        return 'resume'
+    # If there's at least 1 resume signal (email) and no strong JD signals, assume resume
+    if resume_score >= 1 and jd_score < 2:
         return 'resume'
     return 'unknown'
 
@@ -654,7 +693,9 @@ def _display_parsed_job(job):
 
 def _display_match_result(match_result):
     """Display match result for a single resume-JD pair."""
-    st.metric("Overall Match Score", f"{match_result['overall_score']}%")
+    _score = match_result.get('overall_score', 0)
+
+    st.metric("Overall Match Score", f"{_score}%")
 
     _dec = match_result.get('decision', '')
     _reason = match_result.get('decision_reason', '')
@@ -664,6 +705,16 @@ def _display_match_result(match_result):
         st.warning(f"🔍 **Decision: REVIEW** — {_reason}")
     else:
         st.error(f"❌ **Decision: REJECT** — {_reason}")
+
+    # ── Fairness / borderline note ───────────────────────────────
+    _near_accept = abs(_score - 75) <= 5   # within ±5 of Accept threshold
+    _near_review  = abs(_score - 60) <= 5  # within ±5 of Review threshold
+    if _near_accept or _near_review:
+        _boundary = "Accept (75%)" if _near_accept else "Review (60%)"
+        st.caption(
+            f"⚖️ **Fairness Note:** Score is within 5 points of the **{_boundary}** "
+            f"boundary — this borderline case warrants human review before a final decision."
+        )
 
     hfr = match_result.get('hard_filter_results', {})
     if hfr:
@@ -699,6 +750,55 @@ def _display_match_result(match_result):
     if match_result.get('missing_required_skills'):
         st.write("**Missing Required Skills:**")
         st.error(", ".join(match_result['missing_required_skills']))
+
+    # ── Explainability panel ─────────────────────────────────────
+    with st.expander("🔍 Why this score?"):
+        import pandas as pd
+        _s   = match_result.get('skill_score', 0)
+        _e   = match_result.get('experience_score', 0)
+        _edu = match_result.get('education_score', 0)
+
+        # Use the configured weights from session state (fall back to defaults)
+        _ws  = st.session_state.get('weight_skills', 50)
+        _we  = st.session_state.get('weight_experience', 30)
+        _wed = st.session_state.get('weight_education', 20)
+
+        _breakdown = pd.DataFrame({
+            'Component':    ['Skills',                          'Experience',                    'Education'],
+            'Score':        [f"{_s}%",                          f"{_e}%",                        f"{_edu}%"],
+            'Weight':       [f"{_ws}%",                         f"{_we}%",                       f"{_wed}%"],
+            'Contribution': [f"{round(_s*_ws/100,1)} pts",      f"{round(_e*_we/100,1)} pts",    f"{round(_edu*_wed/100,1)} pts"],
+        })
+        st.table(_breakdown)
+
+        _raw = round(_s * _ws/100 + _e * _we/100 + _edu * _wed/100, 1)
+        if cf < 1.0:
+            st.write(f"**Weighted Total:** {_raw}%  ×  Confidence {cf}  =  **{_score}%**")
+        else:
+            st.write(f"**Weighted Total: {_score}%**")
+
+        # Skills detail
+        st.markdown("---")
+        matched_req  = match_result.get('matched_skills', [])
+        missing_req  = match_result.get('missing_required_skills', [])
+        missing_pref = match_result.get('missing_preferred_skills', [])
+
+        if matched_req:
+            st.write(f"✅ **Matched required skills ({len(matched_req)}):** {', '.join(matched_req)}")
+        if missing_req:
+            st.write(f"❌ **Missing required skills ({len(missing_req)}):** {', '.join(missing_req)}")
+        if missing_pref:
+            st.write(f"⚠️ **Missing preferred skills ({len(missing_pref)}):** {', '.join(missing_pref[:5])}")
+
+        # Experience & education plain text
+        st.markdown("---")
+        _hfr = match_result.get('hard_filter_results', {})
+        if 'experience' in _hfr:
+            _exp_icon = "✅" if _hfr['experience']['passed'] else "❌"
+            st.write(f"{_exp_icon} **Experience:** {_hfr['experience']['detail']}")
+        if 'education' in _hfr:
+            _edu_icon = "✅" if _hfr['education']['passed'] else "❌"
+            st.write(f"{_edu_icon} **Education:** {_hfr['education']['detail']}")
 
 
 def _display_gap_analysis(gap_analysis, match_result, resume, job, ri, ji):
@@ -951,7 +1051,7 @@ def _display_gap_analysis(gap_analysis, match_result, resume, job, ri, ji):
                         st.error(f"Error sending email: {str(e)}")
 
 
-def _render_batch_mode(tab1, tab2, tab3):
+def _render_batch_mode(tab1, tab2, tab3, tab4):
     """Render the batch-processing mode UI (multiple resumes vs one JD)."""
 
     # ── Tab 1: Batch Resume Analysis ──────────────────────────────
@@ -992,7 +1092,10 @@ def _render_batch_mode(tab1, tab2, tab3):
                     progress = st.progress(0, text="Parsing resumes...")
                     for i, f in enumerate(uploaded_files):
                         names.append(f.name)
-                        file_data.append((f.getvalue(), f.name))
+                        file_bytes = f.getvalue()
+                        file_data.append((file_bytes, f.name))
+                        # Seek back to start so parse_resume can read() the file
+                        f.seek(0)
                         resume, error = parse_resume(f, is_file=True)
                         if error:
                             resumes.append(None)
@@ -1140,7 +1243,11 @@ def _render_batch_mode(tab1, tab2, tab3):
 
                     if st.button("Calculate Match Scores", key="batch_calc_matches"):
                         match_results = {}
-                        matcher = JobMatcher()
+                        matcher = JobMatcher(
+                            skill_weight=st.session_state.weight_skills / 100,
+                            experience_weight=st.session_state.weight_experience / 100,
+                            education_weight=st.session_state.weight_education / 100,
+                        )
                         total = len(valid_resumes)
                         progress = st.progress(0, text="Computing matches...")
 
@@ -1161,6 +1268,25 @@ def _render_batch_mode(tab1, tab2, tab3):
                 # Display match results in collapsible sections
                 if st.session_state.batch_matches_computed:
                     st.markdown("---")
+
+                    # ── Ranked Leaderboard ────────────────────────────────
+                    _medal = {0: "🥇", 1: "🥈", 2: "🥉"}
+                    _ranked = sorted(
+                        st.session_state.batch_match_results.items(),
+                        key=lambda x: x[1]['overall_score'],
+                        reverse=True
+                    )
+                    st.write("**🏆 Candidate Ranking:**")
+                    for _rank, (_ri, _mr) in enumerate(_ranked):
+                        _rname = (st.session_state.batch_resumes[_ri].name
+                                  or st.session_state.batch_resume_names[_ri])
+                        _rscore = _mr['overall_score']
+                        _rdec   = _mr.get('decision', '')
+                        _rdec_icon = {"Accept": "✅", "Review": "🔍"}.get(_rdec, "❌")
+                        _rank_label = _medal.get(_rank, f"#{_rank + 1}")
+                        st.write(f"{_rank_label} &nbsp; **{_rname}** — {_rscore}% &nbsp; {_rdec_icon} {_rdec}")
+                    st.markdown("---")
+
                     for ri, m_result in st.session_state.batch_match_results.items():
                         resume = st.session_state.batch_resumes[ri]
                         r_name = resume.name or st.session_state.batch_resume_names[ri]
@@ -1223,6 +1349,204 @@ def _render_batch_mode(tab1, tab2, tab3):
                     with st.expander(label, expanded=_is_expanded):
                         _display_gap_analysis(gap, m_result, resume, job, ri, 0)
 
+    # ── Tab 4: Analytics (Batch Mode) ─────────────────────────────
+    with tab4:
+        st.header("📈 Batch Analytics & Insights")
+
+        if not st.session_state.batch_matches_computed:
+            st.info("Please complete batch resume parsing, JD parsing, and match score calculation to view analytics.")
+        else:
+            analytics = ScreeningAnalytics()
+            resumes = st.session_state.batch_resumes
+            match_results = st.session_state.batch_match_results
+
+            # Generate analytics
+            batch_analytics = analytics.analyze_batch_resumes(resumes, match_results)
+
+            if 'error' in batch_analytics:
+                st.error(batch_analytics['error'])
+            else:
+                import plotly.graph_objects as go
+                # Determine chart template and font color based on current theme
+                _is_light = st.session_state.get('theme', 'Dark') == 'Light'
+                _chart_template = 'plotly' if _is_light else 'plotly_dark'
+                _chart_font_color = '#111111' if _is_light else '#f0f2f6'
+                _axis_cfg = dict(
+                    tickfont=dict(color=_chart_font_color),
+                    title=dict(font=dict(color=_chart_font_color))
+                )
+
+                # Overview metrics
+                st.subheader("📊 Overview")
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Total Candidates", batch_analytics['total_candidates'])
+                with col2:
+                    st.metric("Avg Score", f"{batch_analytics['score_distribution']['mean']}%")
+                with col3:
+                    st.metric("Accepted", batch_analytics['decisions'].get('Accept', 0))
+                with col4:
+                    st.metric("Rejected", batch_analytics['decisions'].get('Reject', 0))
+
+                st.markdown("---")
+
+                # Two column layout for visualizations
+                col_left, col_right = st.columns(2)
+
+                with col_left:
+                    # Score Distribution
+                    st.subheader("📈 Score Distribution")
+                    scores = batch_analytics['score_distribution']['scores']
+                    if scores:
+                        fig = go.Figure(data=[go.Histogram(
+                            x=scores,
+                            nbinsx=10,
+                            marker_color='#4a6cf7',
+                            opacity=0.75
+                        )])
+                        fig.update_layout(
+                            template=_chart_template,
+                            xaxis_title="Match Score (%)",
+                            yaxis_title="Number of Candidates",
+                            height=300,
+                            margin=dict(l=20, r=20, t=30, b=20),
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color=_chart_font_color),
+                            xaxis=_axis_cfg,
+                            yaxis=_axis_cfg
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+
+                        # Score statistics
+                        st.write("**Statistics:**")
+                        stat_col1, stat_col2 = st.columns(2)
+                        with stat_col1:
+                            st.write(f"Mean: {batch_analytics['score_distribution']['mean']}%")
+                            st.write(f"Min: {batch_analytics['score_distribution']['min']}%")
+                        with stat_col2:
+                            st.write(f"Median: {batch_analytics['score_distribution']['median']}%")
+                            st.write(f"Max: {batch_analytics['score_distribution']['max']}%")
+
+                    # Decision Breakdown
+                    st.subheader("✅ Decision Breakdown")
+                    decisions = batch_analytics['decisions']
+                    if any(decisions.values()):
+                        fig = go.Figure(data=[go.Pie(
+                            labels=list(decisions.keys()),
+                            values=list(decisions.values()),
+                            marker=dict(colors=['#2ea043', '#f59f00', '#d73a49']),
+                            hole=0.4,
+                            textfont=dict(color=_chart_font_color)
+                        )])
+                        fig.update_layout(
+                            template=_chart_template,
+                            height=300,
+                            margin=dict(l=20, r=20, t=30, b=20),
+                            showlegend=True,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color=_chart_font_color),
+                            legend=dict(font=dict(color=_chart_font_color))
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+
+                with col_right:
+                    # Experience Distribution
+                    st.subheader("💼 Experience Distribution")
+                    exp_dist = batch_analytics['experience_distribution']
+                    if any(exp_dist.values()):
+                        fig = go.Figure(data=[go.Bar(
+                            x=list(exp_dist.keys()),
+                            y=list(exp_dist.values()),
+                            marker_color=['#34d399', '#60a5fa', '#a78bfa'],
+                            text=list(exp_dist.values()),
+                            textposition='auto',
+                            textfont=dict(color=_chart_font_color)
+                        )])
+                        fig.update_layout(
+                            template=_chart_template,
+                            xaxis_title="Experience Level",
+                            yaxis_title="Count",
+                            height=300,
+                            margin=dict(l=20, r=20, t=30, b=20),
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            showlegend=False,
+                            font=dict(color=_chart_font_color),
+                            xaxis=_axis_cfg,
+                            yaxis=_axis_cfg
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+
+                        # Experience statistics
+                        st.write("**Experience Statistics:**")
+                        exp_stats = batch_analytics['experience_stats']
+                        stat_col1, stat_col2 = st.columns(2)
+                        with stat_col1:
+                            st.write(f"Mean: {exp_stats['mean']} years")
+                            st.write(f"Min: {exp_stats['min']} years")
+                        with stat_col2:
+                            st.write(f"Median: {exp_stats['median']} years")
+                            st.write(f"Max: {exp_stats['max']} years")
+
+                    # Top Skills
+                    st.subheader("🔥 Most Common Skills")
+                    top_skills = batch_analytics['top_skills']
+                    if top_skills:
+                        for idx, (skill, count) in enumerate(top_skills[:8], 1):
+                            st.write(f"{idx}. **{skill.title()}** — {count} candidate(s)")
+
+                # Comparison Table
+                st.markdown("---")
+                st.subheader("📋 Candidate Comparison Table")
+                comparison_data = analytics.generate_comparison_matrix(resumes, match_results)
+
+                if comparison_data:
+                    # Create dataframe for display
+                    import pandas as pd
+                    df = pd.DataFrame(comparison_data)
+                    df_display = df[[
+                        'name', 'experience', 'skills_count', 'overall_score',
+                        'skill_score', 'experience_score', 'education_score',
+                        'decision', 'certifications'
+                    ]]
+                    df_display.columns = [
+                        'Name', 'Exp (yrs)', 'Skills', 'Overall %',
+                        'Skill %', 'Exp %', 'Edu %', 'Decision', 'Certs'
+                    ]
+
+                    # Color code by decision
+                    def color_decision(val):
+                        if val == 'Accept':
+                            return 'background-color: #1a7f37; color: #ffffff'
+                        elif val == 'Review':
+                            return 'background-color: #b8860b; color: #ffffff'
+                        elif val == 'Reject':
+                            return 'background-color: #b91c1c; color: #ffffff'
+                        return ''
+
+                    styled_df = df_display.style.applymap(color_decision, subset=['Decision'])
+                    st.dataframe(styled_df, use_container_width=True, height=400)
+
+                    # Export to CSV
+                    csv = df_display.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download Comparison Table (CSV)",
+                        data=csv,
+                        file_name=f"candidate_comparison_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv"
+                    )
+
+                # Common Gaps
+                if batch_analytics.get('common_missing_skills'):
+                    st.markdown("---")
+                    st.subheader("🎯 Common Skill Gaps")
+                    st.write("Skills most frequently missing across candidates:")
+                    common_gaps = batch_analytics['common_missing_skills']
+                    for idx, (skill, count) in enumerate(common_gaps[:10], 1):
+                        percentage = (count / batch_analytics['total_candidates']) * 100
+                        st.write(f"{idx}. **{skill.title()}** — missing in {count} candidates ({percentage:.0f}%)")
+
 
 def _render_sidebar():
     """Render the sidebar (shared by Single and Batch modes)."""
@@ -1239,125 +1563,176 @@ def _render_sidebar():
         )
         st.markdown("---")
 
-        st.header("About")
-        st.write("""
-        This AI-powered system helps automate resume screening by:
-        - Parsing resumes in multiple formats (PDF, DOCX, TXT)
-        - **OCR support** for image & scanned resumes (PNG, JPG, TIFF, BMP)
-        - Extracting skills, experience, and qualifications
-        - Matching candidates with job requirements
-        - Identifying skill gaps
-        - Providing actionable feedback
-        - Emailing gap analysis reports
-        """)
+        # ── 1. About ─────────────────────────────────────────────
+        with st.expander("ℹ️ About", expanded=False):
+            st.write("""
+            This AI-powered system helps automate resume screening by:
+            - Parsing resumes in multiple formats (PDF, DOCX, TXT)
+            - **OCR support** for image & scanned resumes (PNG, JPG, TIFF, BMP)
+            - Extracting skills, experience, and qualifications
+            - Matching candidates with job requirements
+            - Identifying skill gaps
+            - Providing actionable feedback
+            - Emailing gap analysis reports
+            """)
 
-        st.header("How to Use")
-        st.write("""
-        1. **Resume Analysis**: Upload or paste a resume (PDF/DOCX/TXT or image)
-        2. **Job Matching**: Upload or enter a job description (same formats)
-        3. **Gap Analysis**: View detailed skill gaps and improvement suggestions
+        # ── 2. How to Use ────────────────────────────────────────
+        with st.expander("📖 How to Use", expanded=False):
+            st.write("""
+            1. **Resume Analysis**: Upload or paste a resume (PDF/DOCX/TXT or image)
+            2. **Job Matching**: Upload or enter a job description (same formats)
+            3. **Gap Analysis**: View detailed skill gaps and improvement suggestions
 
-        *Image files (PNG, JPG, TIFF, BMP) are processed via OCR automatically.*
-        """)
+            *Image files (PNG, JPG, TIFF, BMP) are processed via OCR automatically.*
+            """)
 
         st.markdown("---")
-        st.header("📧 Email Configuration")
-        st.info("Configure your email settings to send gap analysis reports to candidates.")
 
-        sender_email = st.text_input(
-            "Sender Email",
-            value=st.session_state.sender_email,
-            type="default",
-            placeholder="your-email@gmail.com",
-            help="Email address to send from"
-        )
+        # ── 3. Matching Weights ───────────────────────────────────
+        with st.expander("⚖️ Matching Weights", expanded=True):
+            st.caption("Adjust how each component contributes to the overall score. All three must sum to exactly 100%.")
 
-        sender_password = st.text_input(
-            label="Password/App Password",
-            value=st.session_state.sender_password,
-            type="password"
-        )
-        st.write("**SMTP Configuration**")
-        col1, col2 = st.columns(2)
-        with col1:
-            smtp_option = st.selectbox(
-                "Connection Type",
-                options=["Port 587 (TLS)", "Port 465 (SSL)"],
-                index=0 if st.session_state.smtp_port == 587 else 1,
-                help="Try Port 465 (SSL) if Port 587 fails due to firewall/network issues"
+            _w_skills = st.slider(
+                "Skills weight (%)", min_value=0, max_value=100,
+                value=st.session_state.weight_skills, step=5, key="_ws"
+            )
+            _w_exp = st.slider(
+                "Experience weight (%)", min_value=0, max_value=100,
+                value=st.session_state.weight_experience, step=5, key="_we"
+            )
+            _w_edu = st.slider(
+                "Education weight (%)", min_value=0, max_value=100,
+                value=st.session_state.weight_education, step=5, key="_wed"
             )
 
-        with col2:
-            if smtp_option == "Port 587 (TLS)":
-                st.session_state.smtp_port = 587
-                st.session_state.use_ssl = False
+            _w_total = _w_skills + _w_exp + _w_edu
+
+            if _w_total > 100:
+                st.error(f"⚠️ Weights sum to {_w_total}% — exceeds 100%. Please reduce them.")
+                _weights_valid = False
+            elif _w_total < 100:
+                st.warning(f"⚠️ Weights sum to {_w_total}% — must equal 100%. Please increase them.")
+                _weights_valid = False
             else:
-                st.session_state.smtp_port = 465
-                st.session_state.use_ssl = True
+                st.success(f"✅ Weights sum to 100% — Skills {_w_skills}% · Exp {_w_exp}% · Edu {_w_edu}%")
+                _weights_valid = True
 
-            st.metric("Port", st.session_state.smtp_port)
+            if _weights_valid and (
+                _w_skills != st.session_state.weight_skills
+                or _w_exp != st.session_state.weight_experience
+                or _w_edu != st.session_state.weight_education
+            ):
+                st.session_state.weight_skills = _w_skills
+                st.session_state.weight_experience = _w_exp
+                st.session_state.weight_education = _w_edu
+                # Invalidate existing match results so user re-runs with new weights
+                st.session_state.batch_matches_computed = False
+                st.session_state.batch_match_results = {}
+                st.session_state.batch_gaps_computed = False
+                st.session_state.batch_gap_analyses = {}
+                if 'match_result' in st.session_state:
+                    del st.session_state['match_result']
 
-        col_save, col_test = st.columns(2)
-        with col_save:
-            if st.button("💾 Save Config", use_container_width=True):
-                st.session_state.sender_email = sender_email
-                st.session_state.sender_password = sender_password
-                st.success("✅ Configuration saved!")
+        st.markdown("---")
 
-        with col_test:
-            if st.button("🔌 Test Connection", use_container_width=True):
-                if not sender_email or not sender_password:
-                    st.error("Please enter email and password first")
+        # ── 4. Email Configuration ───────────────────────────────
+        with st.expander("📧 Email Configuration", expanded=False):
+            st.info("Configure your email settings to send gap analysis reports to candidates.")
+
+            sender_email = st.text_input(
+                "Sender Email",
+                value=st.session_state.sender_email,
+                type="default",
+                placeholder="your-email@gmail.com",
+                help="Email address to send from"
+            )
+
+            sender_password = st.text_input(
+                label="Password/App Password",
+                value=st.session_state.sender_password,
+                type="password"
+            )
+            st.write("**SMTP Configuration**")
+            col1, col2 = st.columns(2)
+            with col1:
+                smtp_option = st.selectbox(
+                    "Connection Type",
+                    options=["Port 587 (TLS)", "Port 465 (SSL)"],
+                    index=0 if st.session_state.smtp_port == 587 else 1,
+                    help="Try Port 465 (SSL) if Port 587 fails due to firewall/network issues"
+                )
+
+            with col2:
+                if smtp_option == "Port 587 (TLS)":
+                    st.session_state.smtp_port = 587
+                    st.session_state.use_ssl = False
                 else:
-                    with st.spinner("Testing connection..."):
-                        email_sender = EmailSender(
-                            smtp_port=st.session_state.smtp_port,
-                            use_ssl=st.session_state.use_ssl,
-                            timeout=30
-                        )
-                        result = email_sender.test_connection(sender_email, sender_password)
-                        if result['success']:
-                            st.success(f"✅ {result['message']}")
-                            st.session_state.sender_email = sender_email
-                            st.session_state.sender_password = sender_password
-                        else:
-                            st.error(f"❌ {result['message']}")
+                    st.session_state.smtp_port = 465
+                    st.session_state.use_ssl = True
 
-        with st.expander("ℹ️ Gmail Setup Instructions"):
-            st.write("""
-            **For Gmail users:**
-            1. Go to your Google Account settings
-            2. Enable 2-Step Verification
-            3. Go to Security > 2-Step Verification > App passwords
-            4. Generate a new app password
-            5. Use that password here (not your regular Gmail password)
+                st.metric("Port", st.session_state.smtp_port)
 
-            **If connection fails (WinError 10060):**
-            - Try switching to Port 465 (SSL)
-            - Check Windows Firewall settings
-            - Temporarily disable antivirus
-            - Try from a different network
-            - Some ISPs block SMTP ports
-            """)
+            col_save, col_test = st.columns(2)
+            with col_save:
+                if st.button("💾 Save Config", use_container_width=True):
+                    st.session_state.sender_email = sender_email
+                    st.session_state.sender_password = sender_password
+                    st.success("✅ Configuration saved!")
 
-        with st.expander("🔧 Troubleshooting"):
-            st.write("""
-            **Common Issues:**
+            with col_test:
+                if st.button("🔌 Test Connection", use_container_width=True):
+                    if not sender_email or not sender_password:
+                        st.error("Please enter email and password first")
+                    else:
+                        with st.spinner("Testing connection..."):
+                            email_sender = EmailSender(
+                                smtp_port=st.session_state.smtp_port,
+                                use_ssl=st.session_state.use_ssl,
+                                timeout=30
+                            )
+                            result = email_sender.test_connection(sender_email, sender_password)
+                            if result['success']:
+                                st.success(f"✅ {result['message']}")
+                                st.session_state.sender_email = sender_email
+                                st.session_state.sender_password = sender_password
+                            else:
+                                st.error(f"❌ {result['message']}")
 
-            1. **Connection Timeout (WinError 10060)**
-               - Your firewall/antivirus may be blocking the connection
-               - Try Port 465 (SSL) instead of Port 587 (TLS)
-               - Check if your ISP blocks SMTP ports
+            with st.expander("ℹ️ Gmail Setup Instructions"):
+                st.write("""
+                **For Gmail users:**
+                1. Go to your Google Account settings
+                2. Enable 2-Step Verification
+                3. Go to Security > 2-Step Verification > App passwords
+                4. Generate a new app password
+                5. Use that password here (not your regular Gmail password)
 
-            2. **Authentication Failed**
-               - Use App Password, not regular password for Gmail
-               - Ensure 2-Step Verification is enabled
+                **If connection fails (WinError 10060):**
+                - Try switching to Port 465 (SSL)
+                - Check Windows Firewall settings
+                - Temporarily disable antivirus
+                - Try from a different network
+                - Some ISPs block SMTP ports
+                """)
 
-            3. **Still not working?**
-               - Try from a different network (mobile hotspot)
-               - Check Windows Defender Firewall settings
-               - Contact your IT department if on corporate network
-            """)
+            with st.expander("🔧 Troubleshooting"):
+                st.write("""
+                **Common Issues:**
+
+                1. **Connection Timeout (WinError 10060)**
+                   - Your firewall/antivirus may be blocking the connection
+                   - Try Port 465 (SSL) instead of Port 587 (TLS)
+                   - Check if your ISP blocks SMTP ports
+
+                2. **Authentication Failed**
+                   - Use App Password, not regular password for Gmail
+                   - Ensure 2-Step Verification is enabled
+
+                3. **Still not working?**
+                   - Try from a different network (mobile hotspot)
+                   - Check Windows Defender Firewall settings
+                   - Contact your IT department if on corporate network
+                """)
 
 
 def main():
@@ -1371,7 +1746,7 @@ def main():
     st.markdown("---")
 
     # Tabs for different functionalities
-    tab1, tab2, tab3 = st.tabs(["📄 Resume Analysis", "🔍 Job Matching", "📊 Gap Analysis"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📄 Resume Analysis", "🔍 Job Matching", "📊 Gap Analysis", "📈 Analytics"])
 
     # ── Mode selector inside Resume tab ──
     with tab1:
@@ -1385,7 +1760,7 @@ def main():
         st.markdown("---")
 
     if mode == "Batch":
-        _render_batch_mode(tab1, tab2, tab3)
+        _render_batch_mode(tab1, tab2, tab3, tab4)
         _render_sidebar()
         return
 
@@ -1593,61 +1968,18 @@ def main():
                     with st.spinner("Analyzing match..."):
                         resume = st.session_state.resume
                         job = st.session_state.job
-                        
-                        matcher = JobMatcher()
+
+                        matcher = JobMatcher(
+                            skill_weight=st.session_state.weight_skills / 100,
+                            experience_weight=st.session_state.weight_experience / 100,
+                            education_weight=st.session_state.weight_education / 100,
+                        )
                         match_result = matcher.match_resume_to_job(resume, job)
                         
                         st.session_state.match_result = match_result
-                        
-                        # Display results
-                        st.metric("Overall Match Score", f"{match_result['overall_score']}%")
 
-                        _dec = match_result.get('decision', '')
-                        _reason = match_result.get('decision_reason', '')
-                        if _dec == "Accept":
-                            st.success(f"✅ **Decision: ACCEPT** — {_reason}")
-                        elif _dec == "Review":
-                            st.warning(f"🔍 **Decision: REVIEW** — {_reason}")
-                        else:
-                            st.error(f"❌ **Decision: REJECT** — {_reason}")
-
-                        hfr = match_result.get('hard_filter_results', {})
-                        if hfr:
-                            st.write("**Eligibility Check:**")
-                            overqualified = not hfr.get('overqualification', {}).get('passed', True)
-                            for key, fv in hfr.items():
-                                if key == 'experience' and overqualified:
-                                    # Suppress the "✅ Minimum Experience" pass when overqualification fails
-                                    continue
-                                icon = "✅" if fv['passed'] else "❌"
-                                st.write(f"\u00a0\u00a0{icon} {fv['label']}: {fv['detail']}")
-
-                        cf = match_result.get('confidence_factor', 1.0)
-                        if cf < 1.0:
-                            st.caption(f"ℹ️ Confidence factor applied: {cf} (sparse resume data detected)")
-
-                        st.write(f"**Match Level:** {match_result['match_level']}")
-
-                        col_a, col_b, col_c = st.columns(3)
-                        with col_a:
-                            st.metric("Skills", f"{match_result['skill_score']}%")
-                        with col_b:
-                            st.metric("Experience", f"{match_result['experience_score']}%")
-                        with col_c:
-                            st.metric("Education", f"{match_result['education_score']}%")
-                        
-                        st.write("**Recommendation:**")
-                        st.info(match_result['recommendation'])
-                        
-                        # Matched skills
-                        if match_result.get('matched_skills'):
-                            st.write("**Matched Skills:**")
-                            st.success(", ".join(match_result['matched_skills'][:10]))
-                        
-                        # Missing skills
-                        if match_result.get('missing_required_skills'):
-                            st.write("**Missing Required Skills:**")
-                            st.error(", ".join(match_result['missing_required_skills']))
+                        # Display results via shared helper (includes explainability + fairness note)
+                        _display_match_result(match_result)
             else:
                 st.info("Please parse both a resume and job description to perform matching")
     
@@ -1997,6 +2329,155 @@ def main():
                                     st.error(f"Error sending email: {str(e)}")
         else:
             st.info("Please complete resume and job matching analysis first")
+
+    # Tab 4: Analytics (Single Mode)
+    with tab4:
+        st.header("📈 Resume Analytics & Quality Score")
+
+        if not st.session_state.resume_parsed:
+            st.info("Please parse a resume in the Resume Analysis tab to view analytics.")
+        else:
+            resume = st.session_state.resume
+            match_result = st.session_state.get('match_result', {})
+
+            # Initialize analytics and quality scorer
+            analytics = ScreeningAnalytics()
+            quality_scorer = ResumeQualityScorer()
+
+            # Get original resume text for quality analysis
+            resume_text = ""  # We don't have the original text in session, so quality score will be limited
+
+            # Two column layout
+            col_left, col_right = st.columns(2)
+
+            with col_left:
+                # Resume Quality Score
+                st.subheader("📝 Resume Quality Score")
+                quality_result = quality_scorer.score_resume(resume, resume_text)
+
+                # Display overall score
+                score = quality_result['overall_score']
+                grade = quality_result['grade']
+
+                # Color-coded metric
+                if score >= 80:
+                    st.success(f"### {score}/100 — {grade}")
+                elif score >= 60:
+                    st.warning(f"### {score}/100 — {grade}")
+                else:
+                    st.error(f"### {score}/100 — {grade}")
+
+                # Component breakdown
+                st.write("**Component Scores:**")
+                components = quality_result['component_scores']
+                for component, value in components.items():
+                    label = component.replace('_', ' ').title()
+                    st.write(f"- {label}: {value:.1f}/25")
+
+                # Strengths
+                st.write("**✅ Strengths:**")
+                for strength in quality_result['strengths']:
+                    st.write(f"• {strength}")
+
+                # Suggestions
+                if quality_result['suggestions']:
+                    st.write("**💡 Improvement Suggestions:**")
+                    for idx, suggestion in enumerate(quality_result['suggestions'][:5], 1):
+                        st.write(f"{idx}. {suggestion}")
+
+            with col_right:
+                # Profile Analytics
+                st.subheader("👤 Profile Analytics")
+                single_analytics = analytics.analyze_single_resume(resume, match_result)
+
+                # Profile summary
+                st.info(single_analytics['profile_summary'])
+
+                # Key metrics
+                met_col1, met_col2, met_col3 = st.columns(3)
+                with met_col1:
+                    st.metric("Total Skills", single_analytics['total_skills'])
+                with met_col2:
+                    st.metric("Experience", f"{single_analytics['experience_years']} yrs")
+                with met_col3:
+                    st.metric("Contact %", f"{single_analytics['contact_completeness']}%")
+
+                # Experience level
+                st.write(f"**Experience Level:** {single_analytics['experience_level']}")
+                st.write(f"**Education:** {single_analytics['education_count']} degree(s)")
+                st.write(f"**Certifications:** {single_analytics['certification_count']}")
+
+                # Skills breakdown by category
+                st.subheader("🔧 Skills by Category")
+                skill_breakdown = single_analytics['skill_breakdown']
+
+                if skill_breakdown:
+                    import plotly.graph_objects as go
+                    _is_light_s = st.session_state.get('theme', 'Dark') == 'Light'
+                    _sfont = '#111111' if _is_light_s else '#f0f2f6'
+                    _saxis = dict(
+                        tickfont=dict(color=_sfont),
+                        title=dict(font=dict(color=_sfont))
+                    )
+
+                    categories = list(skill_breakdown.keys())
+                    counts = [len(skills) for skills in skill_breakdown.values()]
+
+                    fig = go.Figure(data=[go.Bar(
+                        x=categories,
+                        y=counts,
+                        marker_color='#4a6cf7',
+                        text=counts,
+                        textposition='auto',
+                        textfont=dict(color=_sfont)
+                    )])
+                    fig.update_layout(
+                        template='plotly' if _is_light_s else 'plotly_dark',
+                        xaxis_title="Category",
+                        yaxis_title="Number of Skills",
+                        height=300,
+                        margin=dict(l=20, r=20, t=30, b=20),
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        showlegend=False,
+                        font=dict(color=_sfont),
+                        xaxis=_saxis,
+                        yaxis=_saxis
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+                    # Show skills in each category
+                    with st.expander("View Skills by Category"):
+                        for category, skills in skill_breakdown.items():
+                            st.write(f"**{category}:**")
+                            st.write(", ".join(skills))
+                            st.write("")
+
+            # If match analysis is done, show matching insights
+            if st.session_state.get('match_result'):
+                st.markdown("---")
+                st.subheader("🎯 Match Analysis Insights")
+
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Overall Match", f"{match_result.get('overall_score', 0)}%")
+                with col2:
+                    st.metric("Skill Match", f"{match_result.get('skill_score', 0)}%")
+                with col3:
+                    st.metric("Experience Match", f"{match_result.get('experience_score', 0)}%")
+
+                # Profile strengths and weaknesses
+                col_str, col_weak = st.columns(2)
+                with col_str:
+                    st.write("**💪 Profile Strengths:**")
+                    for strength in single_analytics['strengths']:
+                        st.write(f"✅ {strength}")
+
+                with col_weak:
+                    if single_analytics['weaknesses']:
+                        st.write("**🔍 Areas for Improvement:**")
+                        for weakness in single_analytics['weaknesses']:
+                            st.write(f"⚠️ {weakness}")
 
     _render_sidebar()
 

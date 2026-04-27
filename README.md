@@ -87,7 +87,7 @@ This dissertation project lies at the intersection of **Artificial Intelligence*
 
 ### Web Application (Streamlit)
 
-- Three-tab layout: Resume Analysis · Job Matching · Gap Analysis
+- **Four-tab layout**: Resume Analysis · Job Matching · Gap Analysis · **Analytics** ✨ NEW
 - **Single / Batch processing mode** selectable from the Resume Analysis tab
   - **Single mode** – one resume against one JD (full workflow)
   - **Batch mode** – upload up to 10 resumes against one JD; results displayed in collapsible expanders
@@ -97,6 +97,22 @@ This dissertation project lies at the intersection of **Artificial Intelligence*
 - PDF report download and email dispatch per candidate
 - Email dispatch to candidate via SMTP (TLS / SSL)
 - Temporary uploaded files are written to `temp/` and deleted after parsing
+
+### Analytics Dashboard ✨ NEW
+
+- **Resume Quality Score** (0-100) with component breakdown and improvement suggestions
+- **Single Mode Analytics**:
+  - Profile summary and key metrics
+  - Skills categorization with interactive charts
+  - Strengths and weaknesses analysis
+- **Batch Mode Analytics**:
+  - Score distribution histogram
+  - Decision breakdown pie chart
+  - Experience distribution analysis
+  - Top skills and common gaps identification
+  - Candidate comparison table (sortable, exportable to CSV)
+  - Statistical insights (mean, median, min, max)
+- Interactive Plotly visualizations with hover details
 
 ### Email Integration
 

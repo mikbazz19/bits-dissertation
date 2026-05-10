@@ -1,4 +1,4 @@
-"""
+​"""
 Intelligent Resume Screening and Gap Analysis System
 Streamlit Web Application
 """
@@ -1149,39 +1149,41 @@ def _render_batch_mode(tab1, tab2, tab3, tab4):
             )
 
             if jd_input_type == "Upload File":
-                uploaded_jd_file = st.file_uploader(
-                    "Upload Job Description (PDF, DOCX, TXT, or Image)",
-                    type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp'],
-                    key="batch_jd_file"
-                )
+                # Option B: once JD is parsed, hide uploader and show summary + Change button
+                if st.session_state.batch_jobs_parsed and st.session_state.batch_job:
+                    if st.button("🔄 Change JD", key="batch_jd_change"):
+                        st.session_state.batch_jobs_parsed = False
+                        st.session_state.batch_job = None
+                        st.session_state.batch_matches_computed = False
+                        st.session_state.batch_match_results = {}
+                        st.session_state.batch_gaps_computed = False
+                        st.session_state.batch_gap_analyses = {}
+                        st.rerun()
+                else:
+                    uploaded_jd_file = st.file_uploader(
+                        "Upload Job Description (PDF, DOCX, TXT, or Image)",
+                        type=['pdf', 'docx', 'txt', 'png', 'jpg', 'jpeg', 'tiff', 'bmp', 'webp'],
+                        key="batch_jd_file"
+                    )
 
-                # Clear JD state when file removed
-                if uploaded_jd_file is None and st.session_state.batch_jobs_parsed:
-                    st.session_state.batch_jobs_parsed = False
-                    st.session_state.batch_job = None
-                    st.session_state.batch_matches_computed = False
-                    st.session_state.batch_match_results = {}
-                    st.session_state.batch_gaps_computed = False
-                    st.session_state.batch_gap_analyses = {}
+                    if uploaded_jd_file:
+                        _ext = Path(uploaded_jd_file.name).suffix.lower()
+                        if _ext in {'.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.webp'}:
+                            st.info("🖼️ Image file detected — OCR will extract text automatically.")
 
-                if uploaded_jd_file:
-                    _ext = Path(uploaded_jd_file.name).suffix.lower()
-                    if _ext in {'.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.webp'}:
-                        st.info("🖼️ Image file detected — OCR will extract text automatically.")
-
-                if uploaded_jd_file and st.button("Parse Job Description", key="batch_parse_jd"):
-                    with st.spinner("Parsing job description..."):
-                        job, error = parse_job_file(uploaded_jd_file)
-                        if error:
-                            st.error(error)
-                        else:
-                            st.session_state.batch_job = job
-                            st.session_state.batch_jobs_parsed = True
-                            st.session_state.batch_matches_computed = False
-                            st.session_state.batch_match_results = {}
-                            st.session_state.batch_gaps_computed = False
-                            st.session_state.batch_gap_analyses = {}
-                            st.success("✅ Job description parsed!")
+                    if uploaded_jd_file and st.button("Parse Job Description", key="batch_parse_jd"):
+                        with st.spinner("Parsing job description..."):
+                            job, error = parse_job_file(uploaded_jd_file)
+                            if error:
+                                st.error(error)
+                            else:
+                                st.session_state.batch_job = job
+                                st.session_state.batch_jobs_parsed = True
+                                st.session_state.batch_matches_computed = False
+                                st.session_state.batch_match_results = {}
+                                st.session_state.batch_gaps_computed = False
+                                st.session_state.batch_gap_analyses = {}
+                                st.success("✅ Job description parsed!")
             else:
                 jd_text = st.text_area(
                     "Enter Job Description:", height=300, key="batch_jd_text"
@@ -1742,7 +1744,7 @@ def main():
     initialize_session_state()
     _apply_theme()
     
-    st.title("🤖 Intelligent Resume Screening and Gap Analysis System")
+    st.title("🎯 Intelligent Resume Screening and Gap Analysis System")
     st.markdown("### Intelligent Resume Analysis and Job Matching")
 
     st.markdown("---")

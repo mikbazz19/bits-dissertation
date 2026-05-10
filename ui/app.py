@@ -1527,7 +1527,7 @@ def _render_batch_mode(tab1, tab2, tab3, tab4):
                             return 'background-color: #b91c1c; color: #ffffff'
                         return ''
 
-                    styled_df = df_display.style.applymap(color_decision, subset=['Decision'])
+                    styled_df = df_display.style.map(color_decision, subset=['Decision'])
                     st.dataframe(styled_df, use_container_width=True, height=400)
 
                     # Export to CSV

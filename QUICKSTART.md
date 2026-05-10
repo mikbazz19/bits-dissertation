@@ -1,4 +1,4 @@
-# Quick Start Guide
+﻿# Quick Start Guide
 
 ## AI-Powered Resume Screening System
 
@@ -6,41 +6,49 @@ This guide will help you get started with the application in under 5 minutes.
 
 ---
 
+## Prerequisites
+
+- Python 3.10+ installed
+- (Optional) Tesseract OCR — required only for scanned image / PDF input
+  - Windows: https://github.com/UB-Mannheim/tesseract/wiki
+  - Add install dir (e.g. `C:\Program Files\Tesseract-OCR`) to your `PATH`
+
+---
+
 ## Installation (2 minutes)
 
-### Step 1: Open PowerShell/Terminal
+### Step 1: Open PowerShell and navigate to the project
 
-Navigate to project directory:
 ```powershell
 cd "c:\Users\sobasu\Downloads\BITS Pilani\4th Sem\dissertation"
 ```
 
-### Step 2: Create Virtual Environment
+### Step 2: Create and activate a virtual environment
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # macOS/Linux
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
 ```
 
-### Step 3: Install Dependencies
+### Step 3: Install dependencies
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-**Note:** spaCy is optional but recommended for advanced NLP:
-```powershell
-python -m spacy download en_core_web_sm
-```
+> **Optional:** Install spaCy model for advanced NLP (the system works without it via regex fallbacks):
+> ```powershell
+> python -m spacy download en_core_web_sm
+> ```
 
-✅ **Installation Complete!**
+✅ **Installation complete!**
 
 ---
 
 ## Running the Application (1 minute)
 
-### Option A: Web UI (Recommended)
+### Web UI (Recommended)
 
 ```powershell
 streamlit run ui/app.py
@@ -48,261 +56,206 @@ streamlit run ui/app.py
 
 Browser opens automatically at `http://localhost:8501`
 
-### Option B: Quick CLI Demo
+To use a different port:
 
-```powershell
-python main.py
-```
-
-Select option `2` for CLI demo.
-
----
-
-## Testing the Application (3 minutes)
-
-### Quick Workflow Test
-
-1. **Start Web Application**
-   ```powershell
-   streamlit run ui/app.py
-   ```
-
-2. **Upload Sample Resume**
-   - Click on "Resume Analysis" tab
-   - Click "Upload File"
-   - Navigate to: `data/sample_resumes/sample_resume_1.txt`
-   - Click "Parse Resume"
-   - ✅ View extracted information on the right
-
-3. **Load Job Description**
-   - Go to "Job Matching" tab
-   - Open `data/sample_jobs/job_description_1.txt` in notepad
-   - Copy entire content
-   - Paste into text area
-   - Click "Parse Job Description"
-   - ✅ Job requirements extracted
-
-4. **Calculate Match**
-   - Click "Calculate Match Score"
-   - ✅ View match percentage (should be 70-85%)
-   - ✅ See matched and missing skills
-
-5. **Generate Gap Analysis**
-   - Go to "Gap Analysis" tab
-   - Click "Generate Gap Analysis"
-   - ✅ View skill coverage and recommendations
-
-6. **Download Report**
-   - Click "Download Full Report"
-   - ✅ Text file saved with complete analysis
-
-### Email Feature Test (Optional)
-
-**Prerequisites:** Valid email account (Outlook/Gmail)
-
-1. **Configure Email (Sidebar)**
-   - Select "Outlook/Hotmail" (recommended for beginners)
-   - Enter your Outlook email
-   - Enter your Outlook password
-   - Click "🔌 Test Connection"
-   - ✅ Should show "Successfully connected"
-
-2. **Send Report via Email**
-   - In Gap Analysis tab, enter recipient email
-   - Click "📤 Send Email"
-   - ✅ Success message displayed
-   - ✅ Email received within 1-2 minutes
-
-**If using Gmail:** Requires App Password (see setup below)
-
----
-
-## Email Setup for Gmail Users
-
-### Gmail Requires App Password
-
-1. **Enable 2-Step Verification**
-   - Go to https://myaccount.google.com/security
-   - Click "2-Step Verification"
-   - Follow setup instructions
-
-2. **Generate App Password**
-   - In Security settings, scroll to "App passwords"
-   - Select "Mail" and your device
-   - Click "Generate"
-   - Copy the 16-character password
-
-3. **Use in Application**
-   - Select "Gmail" in email provider
-   - Enter your Gmail address
-   - Paste the App Password (not regular password)
-   - Test connection
-
-### Troubleshooting Email Connection
-
-**Error: Connection timeout**
-
-1. **First, try Outlook instead of Gmail:**
-   - Select "Outlook/Hotmail" from dropdown
-   - Use regular Microsoft password
-   - Works better with firewalls
-
-2. **If still failing:**
-   - Try "Gmail (SSL)" option
-   - Connect to mobile hotspot
-   - Check Windows Firewall settings
-   - See detailed troubleshooting in app sidebar
-
----
-
-## Common Commands
-
-### Run Web Application
-```powershell
-streamlit run ui/app.py
-```
-
-### Run on Different Port
 ```powershell
 streamlit run ui/app.py --server.port 8502
 ```
 
-### Run CLI Demo
+### CLI Demo
+
 ```powershell
 python main.py
 ```
 
-### Run Tests
+Select option `2` for a CLI walkthrough using the bundled sample data.
+
+---
+
+## Quick Workflow — Single Mode (3 minutes)
+
+1. **Start the Web Application**
+   ```powershell
+   streamlit run ui/app.py
+   ```
+
+2. **Select Processing Mode**
+   - In the **Resume Analysis** tab, confirm **Single** is selected (default).
+
+3. **Upload a Resume**
+   - Click **Upload File** → navigate to `data/sample_resumes/sample_resume_1.txt`
+   - Click **Parse Resume**
+   - ✅ Extracted name, email, skills, experience, and education appear on the right
+
+4. **Load a Job Description**
+   - Switch to the **Job Matching** tab
+   - Click **Upload File** → navigate to `data/sample_jobs/job_description_1.txt`
+   - Click **Parse Job Description**
+   - ✅ Required skills, preferred skills, and experience requirement extracted
+
+5. **Calculate Match Score**
+   - Click **Calculate Match Score**
+   - ✅ Overall score, decision (Accept / Review / Reject), matched skills, and missing skills displayed
+   - Expand **"🔍 Why this score?"** to see the per-component contribution table
+
+6. **Generate Gap Analysis**
+   - Switch to the **Gap Analysis** tab
+   - Click **Generate Gap Analysis**
+   - ✅ Skill coverage percentages, experience gap, improvement suggestions, and learning path shown
+   - Click **Download PDF Report** to save locally
+
+7. **View Analytics**
+   - Switch to the **Analytics** tab
+   - ✅ Resume Quality Score (0–100) with grade and component breakdown
+   - ✅ Skills-by-Category bar chart
+   - ✅ Profile strengths and (if any) areas for improvement
+
+---
+
+## Quick Workflow — Batch Mode
+
+1. In the **Resume Analysis** tab, select **Batch** as the Processing Mode.
+
+2. **Upload up to 10 resumes** → Click **Parse All Resumes**
+   - Progress bar tracks each file
+   - Collapsible expanders show per-resume results
+
+3. Switch to **Job Matching** tab → Upload one JD → Click **Parse Job Description**
+
+4. Click **Calculate Match Scores**
+   - 🏆 Ranking leaderboard shows all candidates sorted by score (🥇🥈🥉 for top 3)
+   - Expand any candidate for full match details and "Why this score?" explainability
+
+5. Switch to **Gap Analysis** tab → Click **Generate All Gap Analyses**
+   - Each candidate has a collapsible section with PDF download and email option
+
+6. Switch to **Analytics** tab
+   - Score distribution, decision breakdown chart, experience distribution
+   - Candidate Comparison Table — click **📥 Download Comparison Table (CSV)** to export
+
+---
+
+## Adjusting Matching Weights
+
+Open the **sidebar** → expand **⚖️ Matching Weights**:
+
+- Move the **Skills**, **Experience**, and **Education** sliders
+- All three must sum to exactly **100 %** (a green ✅ confirms; warnings shown otherwise)
+- Changing weights invalidates existing results — re-run match calculation to apply new weights
+
+---
+
+## Email Feature (Optional)
+
+**Configure once per session (sidebar → 📧 Email Configuration):**
+
+1. Enter your sender email and password / App Password
+2. Select connection type: Port 587 (TLS) or Port 465 (SSL)
+3. Click **🔌 Test Connection** — wait for ✅ confirmation
+4. Click **💾 Save Config**
+
+**Send a report:**
+
+- In the Gap Analysis tab (single or batch), enter the recipient email and click **📤 Send Email**
+
+**Gmail users:** Regular passwords are rejected — you must use an App Password:
+1. Enable 2-Step Verification at https://myaccount.google.com/security
+2. Security → App passwords → Generate → copy the 16-character password
+3. Use that password in the application
+
+**Tip:** Outlook/Hotmail works with your regular password and is less likely to be blocked by firewalls.
+
+---
+
+## Running Evaluation Metrics
+
+```powershell
+python evaluate.py
+```
+
+Prints Precision / Recall / F1 for all 7 extraction modules and matching metrics (Accuracy, MAE, Spearman's ρ).
+
+```powershell
+python evaluate.py --json         # machine-readable output
+python evaluate.py --save         # writes temp/eval_results.json
+```
+
+---
+
+## Running Tests
+
 ```powershell
 pytest tests/ -v
 ```
 
-### Deactivate Virtual Environment
+Run a single module:
+
 ```powershell
-deactivate
-```
-
-### Stop Web Server
-Press `Ctrl + C` in terminal
-
----
-
-## Project Structure Overview
-
-```
-dissertation/
-├── src/                    # Core source code
-│   ├── data/              # Parsing modules
-│   ├── extraction/        # Information extraction
-│   ├── matching/          # Job matching logic
-│   ├── analysis/          # Gap analysis
-│   ├── models/            # Data models
-│   └── utils/             # Utilities
-├── ui/                    # Web interface
-│   └── app.py            # Streamlit app
-├── data/                  # Sample data
-│   ├── sample_resumes/   # Test resumes
-│   ├── sample_jobs/      # Test job descriptions
-│   └── skills_database.json
-├── tests/                 # Unit tests
-├── main.py               # Entry point
-├── requirements.txt      # Dependencies
-└── README.md            # Full documentation
+pytest tests/test_matcher.py -v
+pytest tests/test_analytics.py -v
 ```
 
 ---
 
-## Key Features
+## Common Commands Reference
 
-✅ **Resume Parsing**
-- PDF, DOCX, TXT support
-- Automatic info extraction
-- Direct text paste option
-
-✅ **Skill Matching**
-- 100+ skills database
-- Smart matching algorithm
-- Match score calculation
-
-✅ **Gap Analysis**
-- Identify missing skills
-- Get improvement suggestions
-- Priority-based recommendations
-
-✅ **Reports**
-- Detailed screening reports
-- Downloadable text format
-- Email delivery option
-
-✅ **Email Integration**
-- Multiple providers (Gmail, Outlook, Yahoo)
-- Secure SMTP configuration
-- Connection testing
-- Professional email formatting
+| Task | Command |
+|---|---|
+| Start web app | `streamlit run ui/app.py` |
+| Start on different port | `streamlit run ui/app.py --server.port 8502` |
+| CLI demo | `python main.py` |
+| Run evaluation | `python evaluate.py` |
+| Run all tests | `pytest tests/ -v` |
+| Run with coverage | `pytest tests/ --cov=src --cov-report=html` |
+| Deactivate venv | `deactivate` |
+| Stop web server | `Ctrl + C` |
 
 ---
 
 ## Troubleshooting
 
-**Problem:** Module not found
-```powershell
-pip install -r requirements.txt
-```
-
-**Problem:** spaCy model missing (optional)
-```powershell
-python -m spacy download en_core_web_sm
-```
-
-**Problem:** Port already in use
-```powershell
-streamlit run ui/app.py --server.port 8502
-```
-
-**Problem:** Email connection timeout
-- Try Outlook/Hotmail instead of Gmail
-- Switch to Gmail (SSL) option
-- Connect to mobile hotspot
-- See app sidebar for detailed troubleshooting
-
-**Problem:** Gmail authentication failed
-- Use App Password, not regular password
-- Enable 2-Step Verification first
-- Generate password at: https://myaccount.google.com/apppasswords
+| Problem | Fix |
+|---|---|
+| `ModuleNotFoundError` | `pip install -r requirements.txt` |
+| spaCy model missing (optional) | `python -m spacy download en_core_web_sm` |
+| Port already in use | `streamlit run ui/app.py --server.port 8502` |
+| `TesseractNotFoundError` | Install Tesseract, add to PATH |
+| Scripts disabled (activation fails) | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` |
+| Email connection timeout | Try Port 465 (SSL) or mobile hotspot |
+| Gmail auth failed | Use App Password, not regular password |
+| Match results disappeared | Expected — re-run after changing weights |
 
 ---
 
-## Sample Workflow
+## Project Structure (Summary)
 
-1. Parse resume → Extract info
-2. Load job description → Parse requirements
-3. Calculate match → View scores
-4. Generate gap analysis → Get recommendations
-5. Download report OR Email to candidate
-6. Configure email (one-time) → Test connection
+```
+dissertation/
+├── src/                    # Core source code
+│   ├── data/              # Parsing modules (PDF, DOCX, TXT)
+│   ├── extraction/        # Information extraction (skills, experience, OCR)
+│   ├── matching/          # Job matching logic (configurable weights)
+│   ├── analysis/          # Gap analysis, analytics, quality scorer, reports
+│   ├── evaluation/        # Precision/Recall/F1 evaluation framework
+│   ├── models/            # Resume and JobDescription dataclasses
+│   └── utils/             # Config, helpers, email sender
+├── ui/
+│   └── app.py            # Streamlit web application
+├── data/
+│   ├── sample_resumes/   # 20+ test resumes (TXT, PDF, DOCX, images)
+│   ├── sample_jobs/      # 20+ test job descriptions
+│   └── skills_database.json
+├── tests/                 # pytest test suite
+├── main.py               # CLI entry point
+├── evaluate.py           # Standalone evaluation runner
+└── requirements.txt
+```
 
 ---
 
 ## Next Steps
 
-- Read full [README.md](README.md) for detailed documentation
-- Explore [notebooks/exploration.ipynb](notebooks/exploration.ipynb)
-- Try with your own resumes
-- Customize skills database
-
----
-
-## Support
-
-- Check README.md for detailed guides
-- Review test cases for examples
-- See CONTRIBUTING.md for development
-
----
-
-**Ready to start? Run:**
-```powershell
-streamlit run ui/app.py
-```
-
-**Happy screening! 🚀**
+- Read the full [README.md](README.md) for detailed feature documentation
+- Explore [notebooks/exploration.ipynb](notebooks/exploration.ipynb) for data analysis examples
+- Try with your own resumes and job descriptions
+- Customise `data/skills_database.json` to add domain-specific skills

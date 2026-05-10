@@ -1378,7 +1378,7 @@ def _render_batch_mode(tab1, tab2, tab3, tab4):
 
                 # Overview metrics
                 st.subheader("📊 Overview")
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3, col4, col5 = st.columns(5)
                 with col1:
                     st.metric("Total Candidates", batch_analytics['total_candidates'])
                 with col2:
@@ -1386,6 +1386,8 @@ def _render_batch_mode(tab1, tab2, tab3, tab4):
                 with col3:
                     st.metric("Accepted", batch_analytics['decisions'].get('Accept', 0))
                 with col4:
+                    st.metric("Reviewed", batch_analytics['decisions'].get('Review', 0))
+                with col5:
                     st.metric("Rejected", batch_analytics['decisions'].get('Reject', 0))
 
                 st.markdown("---")
@@ -1525,7 +1527,7 @@ def _render_batch_mode(tab1, tab2, tab3, tab4):
                             return 'background-color: #b91c1c; color: #ffffff'
                         return ''
 
-                    styled_df = df_display.style.map(color_decision, subset=['Decision'])
+                    styled_df = df_display.style.applymap(color_decision, subset=['Decision'])
                     st.dataframe(styled_df, use_container_width=True, height=400)
 
                     # Export to CSV

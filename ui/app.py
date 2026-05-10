@@ -1,4 +1,4 @@
-​"""
+"""
 Intelligent Resume Screening and Gap Analysis System
 Streamlit Web Application
 """

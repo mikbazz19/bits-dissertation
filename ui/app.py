@@ -1,5 +1,5 @@
 """
-AI-Powered Resume Screening System
+Intelligent Resume Screening and Gap Analysis System
 Streamlit Web Application
 """
 
@@ -33,7 +33,7 @@ from src.extraction.parser import IMAGE_EXTENSIONS
 Config.ensure_directories()
 
 st.set_page_config(
-    page_title="AI Resume Screening System",
+    page_title="Intelligent Resume Screening System",
     page_icon="📄",
     layout="wide"
 )
@@ -1742,7 +1742,7 @@ def main():
     initialize_session_state()
     _apply_theme()
     
-    st.title("🤖 AI-Powered Resume Screening System")
+    st.title("🤖 Intelligent Resume Screening and Gap Analysis System")
     st.markdown("### Intelligent Resume Analysis and Job Matching")
 
     st.markdown("---")

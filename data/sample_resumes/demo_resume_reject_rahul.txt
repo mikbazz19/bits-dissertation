@@ -1,0 +1,29 @@
+Rahul Singh
+rahul.singh@email.com | +91 765 432 1098
+linkedin.com/in/rahulsingh | github.com/rahulsingh
+
+PROFILE
+Computer Science graduate with 1+ year of experience in front-end web development.
+Proficient in Python scripting and JavaScript-based web applications.
+
+SKILLS
+Python, JavaScript, HTML, CSS
+
+EXPERIENCE
+
+Junior Python Developer
+StartupXYZ Technologies, Mumbai
+Jan 2025 - Present
+- Developed web applications using Python scripting and JavaScript
+- Built HTML/CSS front-end interfaces for internal dashboards
+- Participated in sprint planning and team meetings
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+Mumbai University, Mumbai
+2021 - 2024
+
+CO-CURRICULAR ACTIVITIES
+- Runner-up at college hackathon (2023)
+- Member of college coding club
